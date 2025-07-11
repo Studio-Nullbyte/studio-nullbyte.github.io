@@ -168,13 +168,14 @@ src/
 
 ## Deployment
 
-The site is configured for deployment on GitHub Pages, Vercel, or Netlify:
+### GitHub Pages (Automated)
+This site is configured for automatic deployment to GitHub Pages using GitHub Actions.
 
-### GitHub Pages
-```bash
-npm run build
-# Deploy dist folder to gh-pages branch
-```
+- **Live Site**: https://studio-nullbyte.github.io/studio-nullbyte.github.io/
+- **Auto-Deploy**: Pushes to `main` branch trigger automatic builds
+- **Build Status**: Check the Actions tab for deployment status
+
+See [GITHUB_PAGES_SETUP.md](./GITHUB_PAGES_SETUP.md) for detailed setup instructions.
 
 ### Vercel
 ```bash
