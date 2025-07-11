@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.0",
+    "@supabase/supabase-js": "^2.50.5",
     "framer-motion": "^10.0.0",
     "lucide-react": "^0.263.0",
     "react": "^18.3.1",
@@ -29,7 +30,12 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "build:gh-pages": "NODE_ENV=production vite build",
-    "preview:gh-pages": "NODE_ENV=production vite build && vite preview --base=/studio-nullbyte.github.io/"
+    "preview:gh-pages": "NODE_ENV=production vite build && vite preview --base=/studio-nullbyte.github.io/",
+    "db:types": "supabase gen types typescript --local > src/lib/types/database.ts",
+    "db:reset": "supabase db reset",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status"
   },
   "browserslist": {
     "production": [

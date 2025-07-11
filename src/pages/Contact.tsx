@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { Send, Mail, MessageCircle, Clock } from 'lucide-react'
+import { Send, Mail, MessageCircle, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { submitContactForm } from '../lib/supabase'
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -10,12 +11,31 @@ const Contact: React.FC = () => {
     subject: '',
     message: ''
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log('Form submitted:', formData)
-    // In a real app, this would send the data to your backend
+    setSubmitting(true)
+    setSubmitStatus('idle')
+    
+    try {
+      const { error } = await submitContactForm(formData)
+      
+      if (error) {
+        setSubmitStatus('error')
+        setErrorMessage(error.message)
+      } else {
+        setSubmitStatus('success')
+        setFormData({ name: '', email: '', subject: '', message: '' })
+      }
+    } catch (err) {
+      setSubmitStatus('error')
+      setErrorMessage(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -170,9 +190,37 @@ const Contact: React.FC = () => {
                       placeholder="Tell us more about your project or question..."
                     />
                   </div>
-                  <button type="submit" className="btn-primary w-full">
-                    <Send className="w-5 h-5 mr-2" />
-                    Send Message
+                  
+                  {/* Status Messages */}
+                  {submitStatus === 'success' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center space-x-2 text-terminal-green bg-terminal-green/10 border border-terminal-green/20 rounded-sm p-3"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="text-sm font-mono">Message sent successfully! We'll get back to you soon.</span>
+                    </motion.div>
+                  )}
+                  
+                  {submitStatus === 'error' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center space-x-2 text-red-400 bg-red-400/10 border border-red-400/20 rounded-sm p-3"
+                    >
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="text-sm font-mono">{errorMessage || 'Failed to send message. Please try again.'}</span>
+                    </motion.div>
+                  )}
+                  
+                  <button 
+                    type="submit" 
+                    disabled={submitting}
+                    className={`btn-primary w-full ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Send className={`w-5 h-5 mr-2 ${submitting ? 'animate-pulse' : ''}`} />
+                    {submitting ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               </motion.div>

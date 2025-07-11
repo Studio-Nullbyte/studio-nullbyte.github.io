@@ -14,6 +14,10 @@ Studio Nullbyte is a multi-page React + Tailwind CSS website for selling digital
 - **SEO Optimized**: Helmet for meta tags and structured data
 - **Performance**: Optimized for fast loading and smooth animations
 - **Accessibility**: WCAG AA compliant design
+- **Backend Integration**: Supabase for authentication and data storage
+- **Contact Form**: Real-time submissions with database storage
+- **User Authentication**: Registration, login, and profile management
+- **Database**: PostgreSQL with Row Level Security policies
 
 ## Target Audience
 
@@ -189,6 +193,47 @@ See [GITHUB_PAGES_SETUP.md](./GITHUB_PAGES_SETUP.md) for detailed setup instruct
 # Build command: npm run build
 # Publish directory: dist
 ```
+
+## Backend & Database
+
+### Supabase Integration
+Studio Nullbyte uses Supabase for backend services:
+
+- **Authentication**: User registration, login, and session management
+- **Database**: PostgreSQL with real-time capabilities
+- **Storage**: File uploads and asset management
+- **API**: Auto-generated RESTful API with Row Level Security
+
+### Database Schema
+- **Products**: Digital templates and tools catalog
+- **Categories**: Product organization (Web, Notion, AI, etc.)
+- **Users**: Profile management and authentication
+- **Downloads**: Purchase and download tracking
+- **Reviews**: Product ratings and feedback
+- **Contact**: Form submissions and support
+
+See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for complete setup instructions.
+
+## 🚀 Deployment
+
+This site is configured for automatic deployment to GitHub Pages with Supabase backend.
+
+### Prerequisites
+1. GitHub repository with Pages enabled
+2. Supabase project configured
+3. GitHub Secrets configured with Supabase credentials
+
+### Quick Deploy
+1. Add GitHub Secrets:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+2. Push to main branch
+3. GitHub Actions will automatically build and deploy
+
+### Detailed Instructions
+See [DEPLOYMENT_WITH_SUPABASE.md](./DEPLOYMENT_WITH_SUPABASE.md) for step-by-step deployment guide.
+
+**⚠️ Important**: The site will **NOT** connect to Supabase automatically without proper GitHub Secrets configuration.
 
 ## Contact
 
