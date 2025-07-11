@@ -212,7 +212,7 @@ Studio Nullbyte uses Supabase for backend services:
 - **Reviews**: Product ratings and feedback
 - **Contact**: Form submissions and support
 
-See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for complete setup instructions.
+See [SUPABASE_SETUP.md](./docs/SUPABASE_SETUP.md) for complete setup instructions.
 
 ## 🚀 Deployment
 
@@ -231,7 +231,7 @@ This site is configured for automatic deployment to GitHub Pages with Supabase b
 3. GitHub Actions will automatically build and deploy
 
 ### Detailed Instructions
-See [DEPLOYMENT_WITH_SUPABASE.md](./DEPLOYMENT_WITH_SUPABASE.md) for step-by-step deployment guide.
+See [DEPLOYMENT_WITH_SUPABASE.md](./docs/DEPLOYMENT_WITH_SUPABASE.md) for step-by-step deployment guide.
 
 **⚠️ Important**: The site will **NOT** connect to Supabase automatically without proper GitHub Secrets configuration.
 

@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-Studio Nullbyte is now integrated with Supabase for backend data management, authentication, and storage. This provides a complete backend solution for the digital template marketplace.
+The site is now integrated with Supabase for backend data management, authentication, and storage. This provides a complete backend solution for the digital template marketplace.
 
 ## 📋 Features Implemented
 
@@ -34,7 +34,7 @@ Studio Nullbyte is now integrated with Supabase for backend data management, aut
 3. Click "New Project"
 4. Choose your organization
 5. Fill in project details:
-   - **Name**: `studio-nullbyte`
+   - **Name**: Name your project
    - **Database Password**: Generate a strong password
    - **Region**: Choose closest to your users
 6. Wait for project setup (2-3 minutes)
@@ -207,7 +207,7 @@ Add secrets in GitHub:
 
 ### Production URLs
 Update authentication settings:
-- **Site URL**: `https://studio-nullbyte.github.io/studio-nullbyte.github.io/`
+- **Site URL**: URL of your site
 - **Redirect URLs**: Add your live domain
 
 ## 📈 Analytics & Monitoring

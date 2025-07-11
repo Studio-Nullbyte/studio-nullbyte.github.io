@@ -2,7 +2,7 @@
 
 ## Overview
 
-Your Studio Nullbyte site will **NOT** automatically connect to Supabase when deployed to GitHub Pages unless you configure the environment variables properly. Here's how to set it up.
+Your site will **NOT** automatically connect to Supabase when deployed to GitHub Pages unless you configure the environment variables properly. Here's how to set it up.
 
 ## 🔐 Step-by-Step Deployment Setup
 
@@ -12,7 +12,7 @@ Your Supabase credentials need to be stored as GitHub Secrets for secure deploym
 
 #### Add Secrets to GitHub Repository:
 
-1. Go to your repository on GitHub: `https://github.com/Studio-Nullbyte/studio-nullbyte.github.io`
+1. Go to your repository on GitHub
 2. Click **Settings** tab
 3. In the left sidebar, click **Secrets and variables** → **Actions**
 4. Click **New repository secret**
@@ -20,11 +20,11 @@ Your Supabase credentials need to be stored as GitHub Secrets for secure deploym
 
 **Secret 1:**
 - **Name**: `VITE_SUPABASE_URL`
-- **Value**: `https://hfpmmjvdsdofheuffnwb.supabase.co`
+- **Value**: Your supabase project url
 
 **Secret 2:**
 - **Name**: `VITE_SUPABASE_ANON_KEY`
-- **Value**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmcG1tanZkc2RvZmhldWZmbndiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjI0MTA5NywiZXhwIjoyMDY3ODE3MDk3fQ.TLsJBj7YXSgJRLnALJs3_YEqYkY0KMFK51c4Ge1OKyw`
+- **Value**: Your supabase project key
 
 ### 2. Enable GitHub Pages
 
@@ -54,14 +54,14 @@ Once deployed, update your Supabase project settings:
 1. Go to your Supabase dashboard
 2. Navigate to **Authentication** → **URL Configuration**
 3. Update these settings:
-   - **Site URL**: `https://studio-nullbyte.github.io/studio-nullbyte.github.io/`
+   - **Site URL**: URL to your supabase project
    - **Redirect URLs**: Add the same URL
 
 ## 🔍 Verification Steps
 
 ### Check if Supabase is Connected:
 
-1. **Visit your live site**: `https://studio-nullbyte.github.io/studio-nullbyte.github.io/`
+1. **Visit your live site**
 2. **Open Browser Console** (F12)
 3. **Go to Contact page** and try submitting the form
 4. **Check for errors**:
@@ -146,7 +146,7 @@ If you want to test the build with environment variables locally:
 
 ```bash
 # Set environment variables and build
-VITE_SUPABASE_URL=https://hfpmmjvdsdofheuffnwb.supabase.co \
+VITE_SUPABASE_URL=url-to-supabase-project \
 VITE_SUPABASE_ANON_KEY=your-anon-key \
 npm run build
 

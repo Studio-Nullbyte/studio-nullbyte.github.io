@@ -11,7 +11,7 @@
 ## GitHub Repository Configuration
 
 - [ ] **Add GitHub Secrets** (Required for Supabase connection):
-  - [ ] `VITE_SUPABASE_URL`: `https://hfpmmjvdsdofheuffnwb.supabase.co`
+  - [ ] `VITE_SUPABASE_URL`: Your project url in supabase
   - [ ] `VITE_SUPABASE_ANON_KEY`: Your anon key from .env.local
   
   **How to add**: Repository → Settings → Secrets and Variables → Actions → New repository secret
@@ -20,7 +20,7 @@
 
 - [ ] **Update Site URL** in Supabase dashboard:
   - [ ] Go to Authentication → URL Configuration
-  - [ ] Set Site URL: `https://studio-nullbyte.github.io/studio-nullbyte.github.io/`
+  - [ ] Set Site URL
   - [ ] Add same URL to Redirect URLs
 
 ## Deployment
@@ -39,7 +39,7 @@
 
 ## Testing
 
-- [ ] **Visit live site**: `https://studio-nullbyte.github.io/studio-nullbyte.github.io/`
+- [ ] **Visit live site**`
 - [ ] **Test Contact form**:
   - [ ] Submit a test message
   - [ ] Check browser console for errors
