@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-react'
+import { useAuthContext } from '../contexts/AuthContext'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const { user, profile, signOut } = useAuthContext()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,7 +22,22 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     setIsMenuOpen(false)
+    setIsUserMenuOpen(false)
   }, [location])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isUserMenuOpen) {
+        const target = event.target as Element
+        if (!target.closest('.user-menu-container')) {
+          setIsUserMenuOpen(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isUserMenuOpen])
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -67,11 +85,70 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Cart and Mobile Menu Button */}
+          {/* Cart, User Menu, and Mobile Menu Button */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button className="p-2 hover:bg-gray-800 rounded-sm transition-colors">
               <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+            
+            {/* User Authentication */}
+            {user ? (
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-800 rounded-sm transition-colors"
+                >
+                  <div className="w-6 h-6 bg-electric-violet rounded-full flex items-center justify-center">
+                    <User className="w-3 h-3 text-black" />
+                  </div>
+                  <span className="hidden sm:inline font-mono text-sm text-gray-300">
+                    {profile?.full_name || user.email?.split('@')[0] || 'User'}
+                  </span>
+                </button>
+
+                {/* User Dropdown Menu */}
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-code-gray-light border border-gray-700 rounded-lg shadow-lg z-50"
+                    >
+                      <div className="py-2">
+                        <Link
+                          to="/settings"
+                          className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          Account Settings
+                        </Link>
+                        <hr className="border-gray-700 my-1" />
+                        <button
+                          onClick={() => {
+                            signOut()
+                            setIsUserMenuOpen(false)
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2 font-mono text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                className="hidden sm:flex items-center gap-2 bg-electric-violet hover:bg-electric-violet-light text-white font-mono text-sm py-2 px-4 rounded transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Link>
+            )}
             
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -107,6 +184,38 @@ const Header: React.FC = () => {
                     {item.name}
                   </Link>
                 ))}
+                
+                {/* Mobile Auth Links */}
+                <hr className="border-gray-700 my-2" />
+                {user ? (
+                  <>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                    >
+                      <Settings className="w-5 h-5" />
+                      Account Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut()
+                        setIsMenuOpen(false)
+                      }}
+                      className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-red-400 hover:text-red-300 transition-colors text-left"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-electric-violet hover:text-electric-violet-light transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    Sign In
+                  </Link>
+                )}
               </nav>
             </div>
           </motion.div>

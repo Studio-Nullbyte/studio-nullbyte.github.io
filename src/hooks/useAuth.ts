@@ -1,40 +1,158 @@
 import { useState, useEffect } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
-export function useAuth() {
+interface AuthState {
+  user: User | null
+  session: Session | null
+  loading: boolean
+  profile: any | null
+}
+
+interface AuthActions {
+  signUp: (email: string, password: string, userData?: any) => Promise<{ data: any; error: AuthError | null }>
+  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
+  signOut: () => Promise<{ error: AuthError | null }>
+  resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
+  updateProfile: (updates: any) => Promise<{ data: any; error: any }>
+  updatePassword: (password: string) => Promise<{ data: any; error: AuthError | null }>
+  refreshProfile: () => Promise<void>
+}
+
+export function useAuth(): AuthState & AuthActions {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<any | null>(null)
+
+  // Fetch user profile from database
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error)
+        return null
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      return null
+    }
+  }
+
+  // Refresh profile data
+  const refreshProfile = async () => {
+    if (user) {
+      const profileData = await fetchProfile(user.id)
+      setProfile(profileData)
+    }
+  }
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        const profileData = await fetchProfile(session.user.id)
+        setProfile(profileData)
+      }
+      
       setLoading(false)
-    })
+    }
+
+    initializeAuth()
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        const profileData = await fetchProfile(session.user.id)
+        setProfile(profileData)
+      } else {
+        setProfile(null)
+      }
+      
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
+  // Auth actions
+  const signUp = async (email: string, password: string, userData?: any) => {
+    return await supabase.auth.signUp({ 
+      email, 
+      password, 
+      options: { data: userData } 
+    })
+  }
+
+  const signIn = async (email: string, password: string) => {
+    return await supabase.auth.signInWithPassword({ email, password })
+  }
+
+  const signOut = async () => {
+    return await supabase.auth.signOut()
+  }
+
+  const resetPassword = async (email: string) => {
+    return await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+  }
+
+  const updateProfile = async (updates: any) => {
+    if (!user) return { data: null, error: new Error('No user logged in') }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (!error) {
+        setProfile(data)
+      }
+
+      return { data, error }
+    } catch (error) {
+      return { data: null, error }
+    }
+  }
+
+  const updatePassword = async (password: string) => {
+    return await supabase.auth.updateUser({ password })
+  }
+
   return {
     user,
     session,
     loading,
-    signUp: (email: string, password: string, userData?: any) =>
-      supabase.auth.signUp({ email, password, options: { data: userData } }),
-    signIn: (email: string, password: string) =>
-      supabase.auth.signInWithPassword({ email, password }),
-    signOut: () => supabase.auth.signOut(),
+    profile,
+    signUp,
+    signIn,
+    signOut,
+    resetPassword,
+    updateProfile,
+    updatePassword,
+    refreshProfile,
   }
 }
