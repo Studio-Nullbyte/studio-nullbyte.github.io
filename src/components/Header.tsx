@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart, User, Settings, LogOut } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 
 const Header: React.FC = () => {
@@ -9,7 +9,39 @@ const Header: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, profile, signOut } = useAuthContext()
+
+  // Debug logging for admin functionality
+  useEffect(() => {
+    console.log('Header: Auth state changed', {
+      user: !!user,
+      profile: profile,
+      userRole: profile?.role,
+      isAdmin: profile?.role === 'admin'
+    })
+  }, [user, profile])
+
+  const handleSignOut = async () => {
+    try {
+      console.log('Header: Starting sign out...')
+      const { error } = await signOut()
+      
+      if (!error) {
+        console.log('Header: Sign out successful, closing menus and redirecting...')
+        // Close menus and redirect to home
+        setIsUserMenuOpen(false)
+        setIsMenuOpen(false)
+        navigate('/')
+      } else {
+        console.error('Header: Sign out error:', error)
+        alert('Failed to sign out. Please try again.')
+      }
+    } catch (error) {
+      console.error('Header: Unexpected sign out error:', error)
+      alert('An unexpected error occurred while signing out.')
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,6 +115,21 @@ const Header: React.FC = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Admin Link in Main Navigation */}
+            {profile?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${
+                  location.pathname.startsWith('/admin')
+                    ? 'text-electric-violet'
+                    : 'text-gray-300'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           {/* Cart, User Menu, and Mobile Menu Button */}
@@ -124,12 +171,49 @@ const Header: React.FC = () => {
                           <Settings className="w-4 h-4" />
                           Account Settings
                         </Link>
+                        
+                        {/* Admin Menu Items */}
+                        {profile?.role === 'admin' && (
+                          <>
+                            <hr className="border-gray-700 my-1" />
+                            <div className="px-4 py-2">
+                              <p className="font-mono text-xs text-gray-500 uppercase tracking-wider">Admin</p>
+                            </div>
+                            <Link
+                              to="/admin"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-electric-violet hover:text-white hover:bg-electric-violet/10 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <Shield className="w-4 h-4" />
+                              Dashboard
+                            </Link>
+                            <Link
+                              to="/admin/products"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Products
+                            </Link>
+                            <Link
+                              to="/admin/users"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Users
+                            </Link>
+                            <Link
+                              to="/admin/orders"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Orders
+                            </Link>
+                          </>
+                        )}
+                        
                         <hr className="border-gray-700 my-1" />
                         <button
-                          onClick={() => {
-                            signOut()
-                            setIsUserMenuOpen(false)
-                          }}
+                          onClick={handleSignOut}
                           className="w-full flex items-center gap-3 px-4 py-2 font-mono text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                         >
                           <LogOut className="w-4 h-4" />
@@ -185,6 +269,21 @@ const Header: React.FC = () => {
                   </Link>
                 ))}
                 
+                {/* Admin Link in Mobile Main Navigation */}
+                {profile?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${
+                      location.pathname.startsWith('/admin')
+                        ? 'text-electric-violet'
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    <Shield className="w-5 h-5" />
+                    Admin
+                  </Link>
+                )}
+                
                 {/* Mobile Auth Links */}
                 <hr className="border-gray-700 my-2" />
                 {user ? (
@@ -196,11 +295,49 @@ const Header: React.FC = () => {
                       <Settings className="w-5 h-5" />
                       Account Settings
                     </Link>
+                    
+                    {/* Mobile Admin Menu Items */}
+                    {profile?.role === 'admin' && (
+                      <>
+                        <hr className="border-gray-700 my-2" />
+                        <div className="py-2">
+                          <p className="font-mono text-sm text-gray-500 uppercase tracking-wider">Admin</p>
+                        </div>
+                        <Link
+                          to="/admin"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-electric-violet hover:text-electric-violet-light transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Shield className="w-5 h-5" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/admin/products"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Products
+                        </Link>
+                        <Link
+                          to="/admin/users"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Users
+                        </Link>
+                        <Link
+                          to="/admin/orders"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Orders
+                        </Link>
+                        <hr className="border-gray-700 my-2" />
+                      </>
+                    )}
+                    
                     <button
-                      onClick={() => {
-                        signOut()
-                        setIsMenuOpen(false)
-                      }}
+                      onClick={handleSignOut}
                       className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-red-400 hover:text-red-300 transition-colors text-left"
                     >
                       <LogOut className="w-5 h-5" />

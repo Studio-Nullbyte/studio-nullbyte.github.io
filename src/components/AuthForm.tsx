@@ -61,15 +61,31 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage('')
+    setErrors({})
 
     if (!validateForm()) return
 
     try {
+      console.log('AuthForm: Submitting form for mode:', mode)
       const result = await onSubmit(formData)
+      console.log('AuthForm: Form submission result:', result)
       
       if (result.error) {
-        setErrors({ submit: result.error.message || 'An error occurred' })
+        console.error('AuthForm: Form submission error:', result.error)
+        let errorMessage = result.error.message || 'An error occurred'
+        
+        // Provide more user-friendly error messages
+        if (errorMessage.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+        } else if (errorMessage.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and click the confirmation link before signing in.'
+        } else if (errorMessage.includes('Missing Supabase environment variables')) {
+          errorMessage = 'Configuration error. Please contact support.'
+        }
+        
+        setErrors({ submit: errorMessage })
       } else {
+        console.log('AuthForm: Form submission successful')
         if (mode === 'reset') {
           setMessage('Password reset email sent! Check your inbox.')
         } else if (mode === 'register') {
@@ -77,7 +93,14 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
         }
       }
     } catch (error: any) {
-      setErrors({ submit: error.message || 'An unexpected error occurred' })
+      console.error('AuthForm: Form submission exception:', error)
+      let errorMessage = error.message || 'An unexpected error occurred'
+      
+      if (errorMessage.includes('Missing Supabase environment variables')) {
+        errorMessage = 'Configuration error. Please contact support.'
+      }
+      
+      setErrors({ submit: errorMessage })
     }
   }
 

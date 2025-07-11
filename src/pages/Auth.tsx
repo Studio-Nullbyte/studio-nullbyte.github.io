@@ -16,6 +16,19 @@ export default function Auth() {
     return (modeParam === 'register' || modeParam === 'reset') ? modeParam : 'login'
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [forceShowContent, setForceShowContent] = useState(false)
+
+  // Force show content after timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Auth: Loading timeout reached, forcing content display')
+        setForceShowContent(true)
+      }
+    }, 5000) // 5 second timeout
+
+    return () => clearTimeout(timeout)
+  }, [loading])
 
   // Redirect if already logged in
   useEffect(() => {
@@ -44,22 +57,33 @@ export default function Auth() {
       
       switch (mode) {
         case 'login':
+          console.log('Auth: Starting sign in process...')
           result = await signIn(formData.email, formData.password)
+          console.log('Auth: Sign in result:', result)
+          
           if (!result.error) {
+            console.log('Auth: Sign in successful, navigating...')
             const redirectTo = searchParams.get('redirect') || '/'
+            console.log('Auth: Redirecting to:', redirectTo)
             navigate(redirectTo, { replace: true })
+          } else {
+            console.error('Auth: Sign in error:', result.error)
           }
           break
           
         case 'register':
+          console.log('Auth: Starting registration process...')
           result = await signUp(formData.email, formData.password, {
             full_name: formData.fullName,
           })
+          console.log('Auth: Registration result:', result)
           // Don't redirect on register - user needs to verify email
           break
           
         case 'reset':
+          console.log('Auth: Starting password reset...')
           result = await resetPassword(formData.email)
+          console.log('Auth: Password reset result:', result)
           break
           
         default:
@@ -67,7 +91,11 @@ export default function Auth() {
       }
       
       return result
+    } catch (error) {
+      console.error('Auth: Unexpected error during authentication:', error)
+      return { error }
     } finally {
+      console.log('Auth: Setting loading to false')
       setIsLoading(false)
     }
   }
@@ -89,10 +117,13 @@ export default function Auth() {
   }
 
   // Show loading spinner while checking auth state
-  if (loading) {
+  if (loading && !forceShowContent) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
+          <p className="text-gray-400 font-mono text-sm">Loading authentication...</p>
+        </div>
       </div>
     )
   }

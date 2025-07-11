@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AuthDebugger } from './components/AuthDebugger'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -13,6 +14,10 @@ import Contact from './pages/Contact'
 import Auth from './pages/Auth'
 import ResetPassword from './pages/ResetPassword'
 import UserSettings from './pages/UserSettings'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminProducts from './pages/AdminProducts'
+import AdminUsers from './pages/AdminUsers'
+import AdminOrders from './pages/AdminOrders'
 import { useScrollToTop } from './hooks/useScrollToTop'
 
 const App: React.FC = () => {
@@ -80,10 +85,45 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/products" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminProducts />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/users" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminUsers />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/orders" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminOrders />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </motion.main>
         </AnimatePresence>
         <Footer />
+        <AuthDebugger />
       </div>
     </AuthProvider>
   )
