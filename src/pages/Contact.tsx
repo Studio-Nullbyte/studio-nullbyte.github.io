@@ -217,7 +217,7 @@ const Contact: React.FC = () => {
                   <button 
                     type="submit" 
                     disabled={submitting}
-                    className={`btn-primary w-full ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`btn-primary flex w-full ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Send className={`w-5 h-5 mr-2 ${submitting ? 'animate-pulse' : ''}`} />
                     {submitting ? 'Sending...' : 'Send Message'}
