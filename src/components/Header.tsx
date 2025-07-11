@@ -1,12 +1,47 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
+import { useAuthContext } from '../contexts/AuthContext'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, profile, signOut } = useAuthContext()
+
+  // Debug logging for admin functionality
+  useEffect(() => {
+    console.log('Header: Auth state changed', {
+      user: !!user,
+      profile: profile,
+      userRole: profile?.role,
+      isAdmin: profile?.role === 'admin'
+    })
+  }, [user, profile])
+
+  const handleSignOut = async () => {
+    try {
+      console.log('Header: Starting sign out...')
+      const { error } = await signOut()
+      
+      if (!error) {
+        console.log('Header: Sign out successful, closing menus and redirecting...')
+        // Close menus and redirect to home
+        setIsUserMenuOpen(false)
+        setIsMenuOpen(false)
+        navigate('/')
+      } else {
+        console.error('Header: Sign out error:', error)
+        alert('Failed to sign out. Please try again.')
+      }
+    } catch (error) {
+      console.error('Header: Unexpected sign out error:', error)
+      alert('An unexpected error occurred while signing out.')
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,7 +54,22 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     setIsMenuOpen(false)
+    setIsUserMenuOpen(false)
   }, [location])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isUserMenuOpen) {
+        const target = event.target as Element
+        if (!target.closest('.user-menu-container')) {
+          setIsUserMenuOpen(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isUserMenuOpen])
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -65,13 +115,124 @@ const Header: React.FC = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Admin Link in Main Navigation */}
+            {profile?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${
+                  location.pathname.startsWith('/admin')
+                    ? 'text-electric-violet'
+                    : 'text-gray-300'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
-          {/* Cart and Mobile Menu Button */}
+          {/* Cart, User Menu, and Mobile Menu Button */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button className="p-2 hover:bg-gray-800 rounded-sm transition-colors">
               <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+            
+            {/* User Authentication */}
+            {user ? (
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-800 rounded-sm transition-colors"
+                >
+                  <div className="w-6 h-6 bg-electric-violet rounded-full flex items-center justify-center">
+                    <User className="w-3 h-3 text-black" />
+                  </div>
+                  <span className="hidden sm:inline font-mono text-sm text-gray-300">
+                    {profile?.full_name || user.email?.split('@')[0] || 'User'}
+                  </span>
+                </button>
+
+                {/* User Dropdown Menu */}
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-code-gray-light border border-gray-700 rounded-lg shadow-lg z-50"
+                    >
+                      <div className="py-2">
+                        <Link
+                          to="/settings"
+                          className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          Account Settings
+                        </Link>
+                        
+                        {/* Admin Menu Items */}
+                        {profile?.role === 'admin' && (
+                          <>
+                            <hr className="border-gray-700 my-1" />
+                            <div className="px-4 py-2">
+                              <p className="font-mono text-xs text-gray-500 uppercase tracking-wider">Admin</p>
+                            </div>
+                            <Link
+                              to="/admin"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-electric-violet hover:text-white hover:bg-electric-violet/10 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <Shield className="w-4 h-4" />
+                              Dashboard
+                            </Link>
+                            <Link
+                              to="/admin/products"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Products
+                            </Link>
+                            <Link
+                              to="/admin/users"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Users
+                            </Link>
+                            <Link
+                              to="/admin/orders"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Orders
+                            </Link>
+                          </>
+                        )}
+                        
+                        <hr className="border-gray-700 my-1" />
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-3 px-4 py-2 font-mono text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                className="hidden sm:flex items-center gap-2 bg-electric-violet hover:bg-electric-violet-light text-white font-mono text-sm py-2 px-4 rounded transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Link>
+            )}
             
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -107,6 +268,91 @@ const Header: React.FC = () => {
                     {item.name}
                   </Link>
                 ))}
+                
+                {/* Admin Link in Mobile Main Navigation */}
+                {profile?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${
+                      location.pathname.startsWith('/admin')
+                        ? 'text-electric-violet'
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    <Shield className="w-5 h-5" />
+                    Admin
+                  </Link>
+                )}
+                
+                {/* Mobile Auth Links */}
+                <hr className="border-gray-700 my-2" />
+                {user ? (
+                  <>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                    >
+                      <Settings className="w-5 h-5" />
+                      Account Settings
+                    </Link>
+                    
+                    {/* Mobile Admin Menu Items */}
+                    {profile?.role === 'admin' && (
+                      <>
+                        <hr className="border-gray-700 my-2" />
+                        <div className="py-2">
+                          <p className="font-mono text-sm text-gray-500 uppercase tracking-wider">Admin</p>
+                        </div>
+                        <Link
+                          to="/admin"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-electric-violet hover:text-electric-violet-light transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Shield className="w-5 h-5" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/admin/products"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Products
+                        </Link>
+                        <Link
+                          to="/admin/users"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Users
+                        </Link>
+                        <Link
+                          to="/admin/orders"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Orders
+                        </Link>
+                        <hr className="border-gray-700 my-2" />
+                      </>
+                    )}
+                    
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-red-400 hover:text-red-300 transition-colors text-left"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-electric-violet hover:text-electric-violet-light transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    Sign In
+                  </Link>
+                )}
               </nav>
             </div>
           </motion.div>

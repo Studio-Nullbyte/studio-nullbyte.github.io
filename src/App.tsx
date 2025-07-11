@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AuthProvider } from './contexts/AuthContext'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { AuthDebugger } from './components/AuthDebugger'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -8,6 +11,13 @@ import Products from './pages/Products'
 import Product from './pages/Product'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import Auth from './pages/Auth'
+import ResetPassword from './pages/ResetPassword'
+import UserSettings from './pages/UserSettings'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminProducts from './pages/AdminProducts'
+import AdminUsers from './pages/AdminUsers'
+import AdminOrders from './pages/AdminOrders'
 import { useScrollToTop } from './hooks/useScrollToTop'
 
 const App: React.FC = () => {
@@ -35,29 +45,87 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Header />
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={location.pathname}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={pageTransition}
-          transition={{ duration: 0.3 }}
-          className="flex-1"
-        >
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/product/:id" element={<Product />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </motion.main>
-      </AnimatePresence>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-black text-white">
+        <Header />
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageTransition}
+            transition={{ duration: 0.3 }}
+            className="flex-1"
+          >
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              
+              {/* Authentication Routes */}
+              <Route 
+                path="/auth" 
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Auth />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Protected Routes */}
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <UserSettings />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/products" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminProducts />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/users" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminUsers />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/orders" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminOrders />
+                  </ProtectedRoute>
+                } 
+              />
+            </Routes>
+          </motion.main>
+        </AnimatePresence>
+        <Footer />
+        <AuthDebugger />
+      </div>
+    </AuthProvider>
   )
 }
 

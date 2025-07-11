@@ -1,6 +1,3 @@
--- Enable Row Level Security
-alter database postgres set "app.jwt_secret" to 'your-jwt-secret';
-
 -- Create custom types
 create type contact_status as enum ('new', 'in_progress', 'resolved');
 
@@ -71,6 +68,42 @@ create table if not exists public.contact_submissions (
   status contact_status default 'new'
 );
 
+-- Add admin role to user_profiles
+alter table public.user_profiles add column if not exists role text default 'user' check (role in ('user', 'admin'));
+
+-- Create orders table for tracking purchases
+create table if not exists public.orders (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  total_amount decimal(10,2) not null,
+  status text not null default 'pending' check (status in ('pending', 'completed', 'failed', 'refunded')),
+  payment_method text,
+  payment_id text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table if not exists public.order_items (
+  id uuid default gen_random_uuid() primary key,
+  order_id uuid references public.orders(id) on delete cascade not null,
+  product_id uuid references public.products(id) on delete cascade not null,
+  price decimal(10,2) not null,
+  quantity integer not null default 1,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create admin activity log table
+create table if not exists public.admin_activity_log (
+  id uuid default gen_random_uuid() primary key,
+  admin_user_id uuid references auth.users(id) on delete cascade not null,
+  action text not null,
+  table_name text,
+  record_id uuid,
+  old_values jsonb,
+  new_values jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Create indexes for better performance
 create index if not exists idx_products_category_id on public.products(category_id);
 create index if not exists idx_products_featured on public.products(featured) where featured = true;
@@ -80,6 +113,14 @@ create index if not exists idx_download_history_product_id on public.download_hi
 create index if not exists idx_reviews_product_id on public.reviews(product_id);
 create index if not exists idx_reviews_rating on public.reviews(rating);
 create index if not exists idx_contact_submissions_status on public.contact_submissions(status);
+create index if not exists idx_orders_user_id on public.orders(user_id);
+create index if not exists idx_orders_status on public.orders(status);
+create index if not exists idx_orders_created_at on public.orders(created_at);
+create index if not exists idx_order_items_order_id on public.order_items(order_id);
+create index if not exists idx_order_items_product_id on public.order_items(product_id);
+create index if not exists idx_admin_activity_log_admin_user_id on public.admin_activity_log(admin_user_id);
+create index if not exists idx_admin_activity_log_created_at on public.admin_activity_log(created_at);
+create index if not exists idx_user_profiles_role on public.user_profiles(role);
 
 -- Enable Row Level Security (RLS)
 alter table public.user_profiles enable row level security;
@@ -88,6 +129,9 @@ alter table public.products enable row level security;
 alter table public.download_history enable row level security;
 alter table public.reviews enable row level security;
 alter table public.contact_submissions enable row level security;
+alter table public.orders enable row level security;
+alter table public.order_items enable row level security;
+alter table public.admin_activity_log enable row level security;
 
 -- RLS Policies
 
@@ -130,6 +174,166 @@ create policy "Users can update own reviews" on public.reviews
 create policy "Anyone can submit contact forms" on public.contact_submissions
   for insert with check (true);
 
+-- Orders: Users can view and manage their own orders
+create policy "Users can view own orders" on public.orders
+  for select using (auth.uid() = user_id);
+
+create policy "Users can insert own orders" on public.orders
+  for insert with check (auth.uid() = user_id);
+
+-- Admins can manage all orders
+create policy "Admins can view all orders" on public.orders
+  for select using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can update all orders" on public.orders
+  for update using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- Order Items: Users can view and manage their own order items
+create policy "Users can view own order items" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.orders 
+      where id = order_id and user_id = auth.uid()
+    )
+  );
+
+create policy "Users can insert own order items" on public.order_items
+  for insert with check (
+    exists (
+      select 1 from public.orders 
+      where id = order_id and user_id = auth.uid()
+    )
+  );
+
+-- Admins can manage all order items
+create policy "Admins can view all order items" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- Admin Activity Log: Only admins can view or insert logs
+create policy "Admins can view admin activity log" on public.admin_activity_log
+  for select using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can insert admin activity log" on public.admin_activity_log
+  for insert with check (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- Update existing policies for admin access
+-- Categories: Admins can manage categories
+create policy "Admins can insert categories" on public.categories
+  for insert with check (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can update categories" on public.categories
+  for update using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can delete categories" on public.categories
+  for delete using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- Products: Admins can manage all products
+create policy "Admins can view all products" on public.products
+  for select using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can insert products" on public.products
+  for insert with check (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can update products" on public.products
+  for update using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can delete products" on public.products
+  for delete using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- User Profiles: Admins can view and edit all profiles
+create policy "Admins can view all profiles" on public.user_profiles
+  for select using (
+    exists (
+      select 1 from public.user_profiles up 
+      where up.user_id = auth.uid() and up.role = 'admin'
+    )
+  );
+
+create policy "Admins can update all profiles" on public.user_profiles
+  for update using (
+    exists (
+      select 1 from public.user_profiles up 
+      where up.user_id = auth.uid() and up.role = 'admin'
+    )
+  );
+
+-- Contact Submissions: Admins can view and update all submissions
+create policy "Admins can view all contact submissions" on public.contact_submissions
+  for select using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
+create policy "Admins can update contact submissions" on public.contact_submissions
+  for update using (
+    exists (
+      select 1 from public.user_profiles 
+      where user_id = auth.uid() and role = 'admin'
+    )
+  );
+
 -- Functions
 
 -- Function to handle user profile creation
@@ -164,6 +368,10 @@ create trigger handle_updated_at before update on public.user_profiles
 
 drop trigger if exists handle_updated_at on public.products;
 create trigger handle_updated_at before update on public.products
+  for each row execute procedure public.handle_updated_at();
+
+drop trigger if exists handle_updated_at on public.orders;
+create trigger handle_updated_at before update on public.orders
   for each row execute procedure public.handle_updated_at();
 
 -- Insert sample data
@@ -213,4 +421,40 @@ select
   '/api/placeholder/400/300',
   'https://notion-template.studionullbyte.com'
 from public.categories c where c.slug = 'notion'
+on conflict do nothing;
+
+-- Create default admin user (update email as needed)
+insert into public.user_profiles (user_id, full_name, email, role)
+select 
+  id, 
+  'Studio Nullbyte Admin',
+  email,
+  'admin'
+from auth.users 
+where email = 'studionullbyte@gmail.com'
+on conflict (user_id) do update set role = 'admin';
+
+-- Sample orders data
+insert into public.orders (user_id, total_amount, status, payment_method, payment_id)
+select 
+  u.id,
+  78.00,
+  'completed',
+  'stripe',
+  'pi_test_1234567890'
+from auth.users u
+where u.email != 'studionullbyte@gmail.com'
+limit 1
+on conflict do nothing;
+
+insert into public.order_items (order_id, product_id, price, quantity)
+select 
+  o.id,
+  p.id,
+  p.price,
+  1
+from public.orders o
+cross join public.products p
+where p.title = 'Developer Portfolio Kit'
+limit 1
 on conflict do nothing;
