@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
 
 interface AdminUser {
   id: string
@@ -71,7 +72,6 @@ export default function AdminUsers() {
           const usersData = await getUsers()
           setUsers(usersData)
         } catch (error) {
-          console.error('Error fetching users:', error)
           setError('Failed to load users')
         } finally {
           setUsersLoading(false)
@@ -233,18 +233,18 @@ export default function AdminUsers() {
   const stats = getUserStats()
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Manage Users - Admin - Studio Nullbyte</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-black pt-20 pb-12">
-        <div className="container mx-auto px-4">
+      <div className="pb-6">
+        <div className="w-full px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto"
+            className="w-full"
           >
             {/* Header */}
             <div className="mb-8">
@@ -660,6 +660,6 @@ export default function AdminUsers() {
           </motion.div>
         </div>
       )}
-    </>
+    </AdminLayout>
   )
 }

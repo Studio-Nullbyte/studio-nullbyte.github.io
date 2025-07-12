@@ -10,14 +10,10 @@ async function createAdminProfileEmergency() {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
-      console.error('No user logged in:', userError)
-      return
+      return false
     }
     
-    console.log('Creating admin profile for user:', user.id, user.email)
-    
-    // Use the Supabase service role client to bypass RLS
-    // First try with anon key (this might work if RLS is fixed)
+    // Create admin profile
     const { data, error } = await supabase
       .from('user_profiles')
       .upsert({
@@ -31,19 +27,19 @@ async function createAdminProfileEmergency() {
       .select()
     
     if (error) {
-      console.error('Error creating profile:', error)
-      alert('Error: ' + error.message)
-      return
+      return false
     }
     
-    console.log('Profile created/updated successfully:', data)
-    alert('Admin profile created! Please refresh the page.')
+    return true
     
   } catch (error) {
-    console.error('Unexpected error:', error)
-    alert('Unexpected error: ' + error.message)
+    return false
   }
 }
 
-// Run the function
-createAdminProfileEmergency()
+// Run the function and refresh page if successful
+createAdminProfileEmergency().then(success => {
+  if (success) {
+    window.location.reload()
+  }
+})

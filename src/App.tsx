@@ -3,7 +3,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { AuthDebugger } from './components/AuthDebugger'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -18,6 +17,8 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminProducts from './pages/AdminProducts'
 import AdminUsers from './pages/AdminUsers'
 import AdminOrders from './pages/AdminOrders'
+import AdminCategories from './pages/AdminCategories'
+import AdminContacts from './pages/AdminContacts'
 import { useScrollToTop } from './hooks/useScrollToTop'
 
 const App: React.FC = () => {
@@ -119,11 +120,26 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/admin/categories" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminCategories />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/contacts" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminContacts />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </motion.main>
         </AnimatePresence>
         <Footer />
-        <AuthDebugger />
       </div>
     </AuthProvider>
   )

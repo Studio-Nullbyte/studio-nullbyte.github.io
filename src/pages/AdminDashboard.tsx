@@ -8,12 +8,12 @@ import {
   DollarSign, 
   Clock, 
   Mail,
-  TrendingUp,
   Activity,
   BarChart3
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
 
 interface StatCard {
   title: string
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
           const adminStats = await getAdminStats()
           setStats(adminStats)
         } catch (error) {
-          console.error('Error fetching stats:', error)
+          // Error fetching stats - handle silently
         } finally {
           setStatsLoading(false)
         }
@@ -116,51 +116,20 @@ export default function AdminDashboard() {
     }
   ]
 
-  const quickActions = [
-    {
-      title: 'Manage Products',
-      description: 'Add, edit, or remove templates',
-      icon: Package,
-      color: 'bg-green-500 hover:bg-green-600',
-      href: '/admin/products'
-    },
-    {
-      title: 'Manage Users',
-      description: 'View and edit user accounts',
-      icon: Users,
-      color: 'bg-blue-500 hover:bg-blue-600',
-      href: '/admin/users'
-    },
-    {
-      title: 'View Orders',
-      description: 'Process and track orders',
-      icon: ShoppingCart,
-      color: 'bg-purple-500 hover:bg-purple-600',
-      href: '/admin/orders'
-    },
-    {
-      title: 'Contact Messages',
-      description: 'Review customer inquiries',
-      icon: Mail,
-      color: 'bg-red-500 hover:bg-red-600',
-      href: '/admin/contacts'
-    }
-  ]
-
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Admin Dashboard - Studio Nullbyte</title>
         <meta name="description" content="Studio Nullbyte admin dashboard for managing templates, users, and orders." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-black pt-20 pb-12">
-        <div className="container mx-auto px-4">
+      <div className="pb-6">
+        <div className="w-full px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto"
+            className="w-full"
           >
             {/* Header */}
             <div className="mb-8">
@@ -198,33 +167,6 @@ export default function AdminDashboard() {
                   </motion.div>
                 )
               })}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mb-8">
-              <h2 className="text-xl font-mono text-white mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-electric-violet" />
-                Quick Actions
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon
-                  return (
-                    <motion.button
-                      key={action.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 + index * 0.1 }}
-                      onClick={() => navigate(action.href)}
-                      className={`${action.color} text-white p-6 rounded-lg transition-colors text-left group`}
-                    >
-                      <Icon className="w-8 h-8 mb-3 group-hover:scale-110 transition-transform" />
-                      <h3 className="font-mono font-semibold mb-1">{action.title}</h3>
-                      <p className="font-mono text-sm opacity-90">{action.description}</p>
-                    </motion.button>
-                  )
-                })}
-              </div>
             </div>
 
             {/* Recent Activity */}
@@ -288,6 +230,6 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
       </div>
-    </>
+    </AdminLayout>
   )
 }

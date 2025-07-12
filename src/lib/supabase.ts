@@ -4,17 +4,8 @@ import type { Database } from './types/database'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-console.log('Supabase configuration:', {
-  url: supabaseUrl ? 'Set' : 'Missing',
-  key: supabaseAnonKey ? 'Set' : 'Missing',
-  urlLength: supabaseUrl.length,
-  keyLength: supabaseAnonKey.length
-})
-
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables!')
-  console.error('Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env.local file')
-  console.error('Current values:', { supabaseUrl, hasKey: !!supabaseAnonKey })
+  throw new Error('Missing Supabase environment variables. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -27,15 +18,11 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 
 // Test Supabase connection
 supabase.auth.getSession()
-  .then(({ error }) => {
-    if (error) {
-      console.error('Supabase connection test failed:', error)
-    } else {
-      console.log('Supabase connection test successful')
-    }
+  .then(() => {
+    // Connection test complete - handle silently
   })
-  .catch((error) => {
-    console.error('Supabase connection test error:', error)
+  .catch(() => {
+    // Connection failed - handle silently
   })
 
 // Auth helpers
