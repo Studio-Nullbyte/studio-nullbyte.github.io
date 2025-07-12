@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
 
 interface Order {
   id: string
@@ -97,7 +98,6 @@ export default function AdminOrders() {
           const ordersData = await getOrders()
           setOrders(ordersData)
         } catch (error) {
-          console.error('Error fetching orders:', error)
           setError('Failed to load orders')
         } finally {
           setOrdersLoading(false)
@@ -232,18 +232,18 @@ export default function AdminOrders() {
   const stats = getOrderStats()
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Manage Orders - Admin - Studio Nullbyte</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-black pt-20 pb-12">
-        <div className="container mx-auto px-4">
+      <div className="pb-6">
+        <div className="w-full px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto"
+            className="w-full"
           >
             {/* Header */}
             <div className="mb-8">
@@ -720,6 +720,6 @@ export default function AdminOrders() {
           </motion.div>
         </div>
       )}
-    </>
+    </AdminLayout>
   )
 }

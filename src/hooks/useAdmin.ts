@@ -66,6 +66,15 @@ interface Order {
   }[]
 }
 
+interface Category {
+  id: string
+  name: string
+  description: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 interface ContactSubmission {
   id: string
   name: string
@@ -323,23 +332,79 @@ export function useAdmin() {
   // Order Management
   const getOrders = async (): Promise<Order[]> => {
     try {
-      const { data, error } = await supabase
+      // First, try to get orders with a simple query
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          user_profiles!inner(full_name, email),
-          order_items(
-            id,
-            product_id,
-            price,
-            quantity,
-            products(title)
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      return data || []
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError)
+        throw ordersError
+      }
+
+      if (!ordersData || ordersData.length === 0) {
+        return []
+      }
+
+      // Get unique user IDs from orders
+      const userIds = [...new Set(ordersData.map(order => order.user_id))]
+
+      // Fetch user profiles separately
+      const { data: userProfiles, error: userError } = await supabase
+        .from('user_profiles')
+        .select('id, full_name, email')
+        .in('id', userIds)
+
+      if (userError) {
+        console.warn('Error fetching user profiles:', userError)
+      }
+
+      // Create a map of user profiles for quick lookup
+      const userProfilesMap = new Map()
+      if (userProfiles) {
+        userProfiles.forEach(profile => {
+          userProfilesMap.set(profile.id, profile)
+        })
+      }
+
+      // Get order items for all orders
+      const orderIds = ordersData.map(order => order.id)
+      const { data: orderItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select(`
+          id,
+          order_id,
+          product_id,
+          price,
+          quantity,
+          products(title)
+        `)
+        .in('order_id', orderIds)
+
+      if (itemsError) {
+        console.warn('Error fetching order items:', itemsError)
+      }
+
+      // Create a map of order items grouped by order_id
+      const orderItemsMap = new Map()
+      if (orderItems) {
+        orderItems.forEach(item => {
+          if (!orderItemsMap.has(item.order_id)) {
+            orderItemsMap.set(item.order_id, [])
+          }
+          orderItemsMap.get(item.order_id).push(item)
+        })
+      }
+
+      // Combine all data
+      const enrichedOrders = ordersData.map(order => ({
+        ...order,
+        user_profiles: userProfilesMap.get(order.user_id) || null,
+        order_items: orderItemsMap.get(order.id) || []
+      }))
+
+      return enrichedOrders
     } catch (error) {
       console.error('Error fetching orders:', error)
       throw error
@@ -415,7 +480,7 @@ export function useAdmin() {
   }
 
   // Categories Management
-  const getCategories = async () => {
+  const getCategories = async (): Promise<Category[]> => {
     try {
       const { data, error } = await supabase
         .from('categories')
@@ -430,28 +495,56 @@ export function useAdmin() {
     }
   }
 
-  const createCategory = async (category: { name: string; slug: string; description?: string }) => {
+  const createCategory = async (category: { name: string; description?: string }) => {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .insert(category)
+        .insert({
+          name: category.name,
+          description: category.description || null,
+          is_active: true
+        })
         .select()
         .single()
 
       if (error) throw error
 
-      // Log admin activity
-      await supabase.rpc('log_admin_activity', {
-        p_action: 'create_category',
-        p_table_name: 'categories',
-        p_record_id: data.id,
-        p_new_values: category
-      })
-
       return { data, error: null }
     } catch (error) {
       console.error('Error creating category:', error)
       return { data: null, error }
+    }
+  }
+
+  const updateCategory = async (categoryId: string, updates: { name?: string; description?: string; is_active?: boolean }) => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(updates)
+        .eq('id', categoryId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating category:', error)
+      return { data: null, error }
+    }
+  }
+
+  const deleteCategory = async (categoryId: string) => {
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId)
+
+      if (error) throw error
+      return { error: null }
+    } catch (error) {
+      console.error('Error deleting category:', error)
+      return { error }
     }
   }
 
@@ -477,6 +570,10 @@ export function useAdmin() {
     updateContactSubmissionStatus,
     // Categories
     getCategories,
-    createCategory
+    createCategory,
+    updateCategory,
+    deleteCategory
   }
 }
+
+export type { Order, Category }

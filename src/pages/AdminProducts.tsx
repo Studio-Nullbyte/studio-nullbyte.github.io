@@ -16,8 +16,9 @@ import {
   Save,
   X
 } from 'lucide-react'
-import { useAdmin } from '../hooks/useAdmin'
+import { useAdmin, type Category } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
 
 interface Product {
   id: string
@@ -37,13 +38,6 @@ interface Product {
   active: boolean
   created_at: string
   updated_at: string
-}
-
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description: string | null
 }
 
 export default function AdminProducts() {
@@ -94,7 +88,6 @@ export default function AdminProducts() {
           setProducts(productsData)
           setCategories(categoriesData)
         } catch (error) {
-          console.error('Error fetching data:', error)
           setError('Failed to load products')
         } finally {
           setProductsLoading(false)
@@ -248,18 +241,18 @@ export default function AdminProducts() {
   }
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Manage Products - Admin - Studio Nullbyte</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-black pt-20 pb-12">
-        <div className="container mx-auto px-4">
+      <div className="pb-6">
+        <div className="w-full px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto"
+            className="w-full"
           >
             {/* Header */}
             <div className="mb-8">
@@ -696,6 +689,6 @@ export default function AdminProducts() {
           </motion.div>
         </div>
       )}
-    </>
+    </AdminLayout>
   )
 }

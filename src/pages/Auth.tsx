@@ -22,7 +22,6 @@ export default function Auth() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
-        console.warn('Auth: Loading timeout reached, forcing content display')
         setForceShowContent(true)
       }
     }, 5000) // 5 second timeout
@@ -57,33 +56,23 @@ export default function Auth() {
       
       switch (mode) {
         case 'login':
-          console.log('Auth: Starting sign in process...')
           result = await signIn(formData.email, formData.password)
-          console.log('Auth: Sign in result:', result)
           
           if (!result.error) {
-            console.log('Auth: Sign in successful, navigating...')
             const redirectTo = searchParams.get('redirect') || '/'
-            console.log('Auth: Redirecting to:', redirectTo)
             navigate(redirectTo, { replace: true })
-          } else {
-            console.error('Auth: Sign in error:', result.error)
           }
           break
           
         case 'register':
-          console.log('Auth: Starting registration process...')
           result = await signUp(formData.email, formData.password, {
             full_name: formData.fullName,
           })
-          console.log('Auth: Registration result:', result)
           // Don't redirect on register - user needs to verify email
           break
           
         case 'reset':
-          console.log('Auth: Starting password reset...')
           result = await resetPassword(formData.email)
-          console.log('Auth: Password reset result:', result)
           break
           
         default:
@@ -92,10 +81,8 @@ export default function Auth() {
       
       return result
     } catch (error) {
-      console.error('Auth: Unexpected error during authentication:', error)
       return { error }
     } finally {
-      console.log('Auth: Setting loading to false')
       setIsLoading(false)
     }
   }

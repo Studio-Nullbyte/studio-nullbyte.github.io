@@ -12,33 +12,19 @@ const Header: React.FC = () => {
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuthContext()
 
-  // Debug logging for admin functionality
-  useEffect(() => {
-    console.log('Header: Auth state changed', {
-      user: !!user,
-      profile: profile,
-      userRole: profile?.role,
-      isAdmin: profile?.role === 'admin'
-    })
-  }, [user, profile])
-
   const handleSignOut = async () => {
     try {
-      console.log('Header: Starting sign out...')
       const { error } = await signOut()
       
       if (!error) {
-        console.log('Header: Sign out successful, closing menus and redirecting...')
         // Close menus and redirect to home
         setIsUserMenuOpen(false)
         setIsMenuOpen(false)
         navigate('/')
       } else {
-        console.error('Header: Sign out error:', error)
         alert('Failed to sign out. Please try again.')
       }
     } catch (error) {
-      console.error('Header: Unexpected sign out error:', error)
       alert('An unexpected error occurred while signing out.')
     }
   }
@@ -202,11 +188,25 @@ const Header: React.FC = () => {
                               Users
                             </Link>
                             <Link
+                              to="/admin/categories"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Categories
+                            </Link>
+                            <Link
                               to="/admin/orders"
                               className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
                               onClick={() => setIsUserMenuOpen(false)}
                             >
                               Orders
+                            </Link>
+                            <Link
+                              to="/admin/contacts"
+                              className="flex items-center gap-3 px-4 py-2 font-mono text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Messages
                             </Link>
                           </>
                         )}
@@ -326,11 +326,25 @@ const Header: React.FC = () => {
                           Users
                         </Link>
                         <Link
+                          to="/admin/categories"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Categories
+                        </Link>
+                        <Link
                           to="/admin/orders"
                           className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           Orders
+                        </Link>
+                        <Link
+                          to="/admin/contacts"
+                          className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-gray-300 hover:text-electric-violet transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Messages
                         </Link>
                         <hr className="border-gray-700 my-2" />
                       </>
