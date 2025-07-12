@@ -154,39 +154,54 @@ export function useAdmin() {
   // User Management
   const getUsers = async () => {
     try {
-      const { data, error } = await supabase.auth.admin.listUsers()
-
-      if (error) throw error
-
-      // Get user profiles for additional data
-      const userIds = data.users.map(user => user.id)
-      const { data: profiles } = await supabase
+      // Get user profiles with auth data from profiles table
+      const { data: profiles, error } = await supabase
         .from('user_profiles')
-        .select('user_id, full_name, role')
-        .in('user_id', userIds)
+        .select(`
+          user_id,
+          email,
+          full_name,
+          avatar_url,
+          role,
+          is_active,
+          created_at,
+          updated_at
+        `)
+        .order('created_at', { ascending: false })
 
-      // Combine auth users with profile data
-      const usersWithProfiles = data.users.map(user => {
-        const profile = profiles?.find(p => p.user_id === user.id)
-        const [firstName, lastName] = (profile?.full_name || '').split(' ')
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      // Transform profile data to match AdminUser interface
+      const usersWithProfiles = profiles?.map(profile => {
+        const [firstName, lastName] = (profile.full_name || '').split(' ')
         
         return {
-          id: user.id,
-          email: user.email || '',
+          id: profile.user_id,
+          email: profile.email || '',
           first_name: firstName || null,
           last_name: lastName || null,
-          avatar_url: user.user_metadata?.avatar_url || null,
-          role: (profile?.role as 'user' | 'admin') || 'user',
-          is_active: true, // Default to active for now
-          created_at: user.created_at,
-          last_sign_in_at: user.last_sign_in_at,
-          email_confirmed_at: user.email_confirmed_at
+          avatar_url: profile.avatar_url || null,
+          role: (profile.role as 'user' | 'admin') || 'user',
+          is_active: profile.is_active ?? true,
+          created_at: profile.created_at,
+          last_sign_in_at: null, // Not available from profiles table
+          email_confirmed_at: null // Not available from profiles table
         }
-      })
+      }) || []
 
+      console.log('Fetched users:', usersWithProfiles)
       return usersWithProfiles
     } catch (error) {
       console.error('Error fetching users:', error)
+      
+      // If the table doesn't have the required columns, provide helpful error message
+      if (error instanceof Error && error.message.includes('column')) {
+        throw new Error('User profiles table is missing required columns. Please run the database update script.')
+      }
+      
       throw error
     }
   }
