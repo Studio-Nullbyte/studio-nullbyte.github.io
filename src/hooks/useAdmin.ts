@@ -83,13 +83,17 @@ interface ContactSubmission {
   subject: string
   message: string
   submitted_at: string
-  status: string
+  status: 'new' | 'in_progress' | 'resolved'
 }
 
 export function useAdmin() {
-  const { profile, loading: authLoading } = useAuthContext()
+  const { profile, loading: authLoading, user } = useAuthContext()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+
+  // Cache admin status in localStorage to prevent random drops
+  const ADMIN_CACHE_KEY = 'studio_nullbyte_admin_status'
+  const ADMIN_CACHE_EXPIRY = 'studio_nullbyte_admin_expiry'
 
   // Emergency timeout to prevent infinite loading
   useEffect(() => {
@@ -98,35 +102,83 @@ export function useAdmin() {
         console.warn('🚨 useAdmin: Emergency timeout reached - forcing loading to false')
         setLoading(false)
       }
-    }, 8000)
+    }, 60000) // Increased from 8s to 60s for better reliability
 
     return () => clearTimeout(emergencyTimeout)
   }, [loading])
 
+  // Load cached admin status immediately for faster UI response
+  useEffect(() => {
+    const loadCachedAdminStatus = () => {
+      try {
+        const cachedStatus = localStorage.getItem(ADMIN_CACHE_KEY)
+        const cachedExpiry = localStorage.getItem(ADMIN_CACHE_EXPIRY)
+        
+        if (cachedStatus && cachedExpiry) {
+          const expiryTime = parseInt(cachedExpiry)
+          const now = Date.now()
+          
+          // Cache valid for 30 minutes
+          if (now < expiryTime && user) {
+            const isAdminCached = cachedStatus === 'true'
+            setIsAdmin(isAdminCached)
+          } else {
+            // Clear expired cache
+            localStorage.removeItem(ADMIN_CACHE_KEY)
+            localStorage.removeItem(ADMIN_CACHE_EXPIRY)
+          }
+        }
+      } catch (error) {
+        // Silently handle cache errors
+      }
+    }
+
+    if (user) {
+      loadCachedAdminStatus()
+    }
+  }, [user])
+
+  // Cache admin status when determined
+  const cacheAdminStatus = (adminStatus: boolean) => {
+    try {
+      const expiryTime = Date.now() + (30 * 60 * 1000) // 30 minutes
+      localStorage.setItem(ADMIN_CACHE_KEY, adminStatus.toString())
+      localStorage.setItem(ADMIN_CACHE_EXPIRY, expiryTime.toString())
+    } catch (error) {
+      // Silently handle cache errors
+    }
+  }
+
   // Check if user is admin - wait for both auth and admin loading to complete
   useEffect(() => {
     const checkAdminStatus = () => {
-      console.log('🔍 useAdmin: Checking admin status. authLoading:', authLoading, 'profile:', profile)
-      
       // Don't make admin determination until auth is fully loaded
       if (authLoading) {
-        console.log('⏳ useAdmin: Auth still loading - waiting...')
+        return
+      }
+
+      // Clear admin status and cache if no user
+      if (!user) {
+        setIsAdmin(false)
+        localStorage.removeItem(ADMIN_CACHE_KEY)
+        localStorage.removeItem(ADMIN_CACHE_EXPIRY)
+        setLoading(false)
         return
       }
       
       if (profile) {
         const adminStatus = profile.role === 'admin'
-        console.log(`👑 useAdmin: Admin status:`, adminStatus)
         setIsAdmin(adminStatus)
+        cacheAdminStatus(adminStatus)
       } else {
-        console.log('👤 useAdmin: No profile found - not admin')
         setIsAdmin(false)
+        cacheAdminStatus(false)
       }
       setLoading(false)
     }
 
     checkAdminStatus()
-  }, [profile, authLoading])
+  }, [profile, authLoading, user])
 
   // Admin Statistics
   const getAdminStats = async (): Promise<AdminStats> => {
@@ -492,7 +544,7 @@ export function useAdmin() {
     }
   }
 
-  const updateContactSubmissionStatus = async (submissionId: string, status: string) => {
+  const updateContactSubmissionStatus = async (submissionId: string, status: 'new' | 'in_progress' | 'resolved') => {
     try {
       const { data, error } = await supabase
         .from('contact_submissions')

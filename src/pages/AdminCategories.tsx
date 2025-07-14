@@ -49,7 +49,19 @@ export default function AdminCategories() {
           setCategories(categoriesData)
         } catch (error) {
           console.error('AdminCategories: Error fetching categories:', error)
-          setError('Failed to load categories: ' + (error instanceof Error ? error.message : String(error)))
+          
+          let errorMessage = 'Failed to load categories'
+          if (error instanceof Error) {
+            errorMessage += ': ' + error.message
+          } else if (error && typeof error === 'object' && 'message' in error) {
+            errorMessage += ': ' + (error as any).message
+          } else if (error && typeof error === 'object' && 'error' in error) {
+            errorMessage += ': ' + (error as any).error
+          } else {
+            errorMessage += ': Unknown error occurred'
+          }
+          
+          setError(errorMessage)
         } finally {
           setCategoriesLoading(false)
         }

@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { ArrowRight, Code, Palette, Zap, Users, Download, Star, Contact } from 'lucide-react'
+import { ArrowRight, Code, Palette, Zap, Users, Download, Contact } from 'lucide-react'
 
 const Home: React.FC = () => {
   const features = [

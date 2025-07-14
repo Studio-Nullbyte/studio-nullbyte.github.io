@@ -1,7 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { motion } from 'framer-motion'
 import { Star, Download, Heart, Share2, ArrowLeft, Check } from 'lucide-react'
 
 const Product: React.FC = () => {

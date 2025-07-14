@@ -15,12 +15,19 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
   // Determine if we're still loading overall
   const isLoading = authLoading || adminLoading
 
+  // Listen for session expiration events
   useEffect(() => {
-    console.log('🛡️ AdminProtectedRoute: Auth check - authLoading:', authLoading, 'adminLoading:', adminLoading, 'isAdmin:', isAdmin)
-    
+    const handleSessionExpired = () => {
+      navigate('/', { replace: true })
+    }
+
+    window.addEventListener('session-expired', handleSessionExpired)
+    return () => window.removeEventListener('session-expired', handleSessionExpired)
+  }, [navigate])
+
+  useEffect(() => {
     // Only redirect if we're done loading and user is definitely not admin
     if (!isLoading && !isAdmin) {
-      console.log('🚫 AdminProtectedRoute: Not admin - redirecting to home')
       navigate('/', { replace: true })
     }
   }, [isLoading, isAdmin, navigate, authLoading, adminLoading])

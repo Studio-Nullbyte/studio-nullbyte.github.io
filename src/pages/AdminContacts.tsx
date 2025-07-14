@@ -15,8 +15,8 @@ import {
   Filter
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
-import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import AdminProtectedRoute from '../components/AdminProtectedRoute'
 
 interface ContactSubmission {
   id: string
@@ -25,12 +25,11 @@ interface ContactSubmission {
   subject: string
   message: string
   submitted_at: string
-  status: string
+  status: 'new' | 'in_progress' | 'resolved'
 }
 
 export default function AdminContacts() {
-  const { isAdmin, loading, getContactSubmissions, updateContactSubmissionStatus } = useAdmin()
-  const navigate = useNavigate()
+  const { isAdmin, getContactSubmissions, updateContactSubmissionStatus } = useAdmin()
   
   const [contacts, setContacts] = useState<ContactSubmission[]>([])
   const [filteredContacts, setFilteredContacts] = useState<ContactSubmission[]>([])
@@ -42,11 +41,7 @@ export default function AdminContacts() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate('/')
-    }
-  }, [isAdmin, loading, navigate])
+  // Remove the problematic redirect - AdminProtectedRoute will handle it
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -60,13 +55,13 @@ export default function AdminContacts() {
         } finally {
           setContactsLoading(false)
         }
-      } else if (!loading) {
+      } else {
         setContactsLoading(false)
       }
     }
 
     fetchContacts()
-  }, [isAdmin, loading, getContactSubmissions])
+  }, [isAdmin, getContactSubmissions])
 
   // Filter contacts
   useEffect(() => {
@@ -89,12 +84,17 @@ export default function AdminContacts() {
     setFilteredContacts(filtered)
   }, [contacts, searchTerm, statusFilter])
 
-  const handleStatusChange = async (contactId: string, newStatus: string) => {
+  const handleStatusChange = async (contactId: string, newStatus: 'new' | 'in_progress' | 'resolved') => {
+    console.log('🔄 AdminContacts: Attempting to change status', { contactId, newStatus })
     try {
       const result = await updateContactSubmissionStatus(contactId, newStatus)
+      console.log('📝 AdminContacts: Status change result', result)
+      
       if (result.error) {
-        setError('Failed to update status')
+        console.error('❌ AdminContacts: Status change failed', result.error)
+        setError('Failed to update status: ' + (result.error instanceof Error ? result.error.message : String(result.error)))
       } else {
+        console.log('✅ AdminContacts: Status updated successfully')
         setMessage('Status updated successfully!')
         
         // Update local state
@@ -109,20 +109,27 @@ export default function AdminContacts() {
           setSelectedContact({ ...selectedContact, status: newStatus })
         }
         
-        setTimeout(() => setMessage(''), 3000)
+        // Close the modal after successful status update
+        setTimeout(() => {
+          setMessage('')
+          closeDetailModal()
+        }, 1500) // Show success message briefly before closing
       }
     } catch (error) {
-      setError('An unexpected error occurred')
+      console.error('❌ AdminContacts: Unexpected error during status change', error)
+      setError('An unexpected error occurred: ' + (error instanceof Error ? error.message : String(error)))
     }
   }
 
   const openContactDetail = (contact: ContactSubmission) => {
+    console.log('👁️ AdminContacts: Opening contact detail', contact)
     setSelectedContact(contact)
     setIsDetailModalOpen(true)
     
-    // Mark as read if it's new
+    // Mark as in_progress if it's new (since 'read' is not a valid enum value)
     if (contact.status === 'new') {
-      handleStatusChange(contact.id, 'read')
+      console.log('📖 AdminContacts: Marking contact as in_progress')
+      handleStatusChange(contact.id, 'in_progress')
     }
   }
 
@@ -140,25 +147,18 @@ export default function AdminContacts() {
             New
           </span>
         )
-      case 'read':
+      case 'in_progress':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-            <Eye className="w-3 h-3" />
-            Read
+            <Clock className="w-3 h-3" />
+            In Progress
           </span>
         )
-      case 'replied':
+      case 'resolved':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono bg-terminal-green/20 text-terminal-green border border-terminal-green/30">
             <CheckCircle className="w-3 h-3" />
-            Replied
-          </span>
-        )
-      case 'archived':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono bg-gray-500/20 text-gray-400 border border-gray-500/30">
-            <Clock className="w-3 h-3" />
-            Archived
+            Resolved
           </span>
         )
       default:
@@ -174,32 +174,30 @@ export default function AdminContacts() {
     return {
       total: contacts.length,
       new: contacts.filter(c => c.status === 'new').length,
-      read: contacts.filter(c => c.status === 'read').length,
-      replied: contacts.filter(c => c.status === 'replied').length,
-      archived: contacts.filter(c => c.status === 'archived').length
+      in_progress: contacts.filter(c => c.status === 'in_progress').length,
+      resolved: contacts.filter(c => c.status === 'resolved').length
     }
   }
 
-  if (loading || contactsLoading) {
+  if (contactsLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
-      </div>
+      <AdminProtectedRoute>
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
+        </div>
+      </AdminProtectedRoute>
     )
-  }
-
-  if (!isAdmin) {
-    return null
   }
 
   const stats = getContactStats()
 
   return (
-    <AdminLayout>
-      <Helmet>
-        <title>Contact Messages - Admin - Studio Nullbyte</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+    <AdminProtectedRoute>
+      <AdminLayout>
+        <Helmet>
+          <title>Contact Messages - Admin - Studio Nullbyte</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
 
       <div className="pb-6">
         <div className="w-full px-4 py-6">
@@ -266,10 +264,10 @@ export default function AdminContacts() {
 
               <div className="bg-code-gray-light border border-gray-700 rounded-lg p-4">
                 <div className="flex items-center gap-2">
-                  <Eye className="w-6 h-6 text-yellow-400" />
+                  <Clock className="w-6 h-6 text-yellow-400" />
                   <div>
-                    <p className="text-xl font-mono text-white font-bold">{stats.read}</p>
-                    <p className="text-gray-400 font-mono text-xs">Read</p>
+                    <p className="text-xl font-mono text-white font-bold">{stats.in_progress}</p>
+                    <p className="text-gray-400 font-mono text-xs">In Progress</p>
                   </div>
                 </div>
               </div>
@@ -278,18 +276,8 @@ export default function AdminContacts() {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-6 h-6 text-terminal-green" />
                   <div>
-                    <p className="text-xl font-mono text-white font-bold">{stats.replied}</p>
-                    <p className="text-gray-400 font-mono text-xs">Replied</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-code-gray-light border border-gray-700 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-6 h-6 text-gray-400" />
-                  <div>
-                    <p className="text-xl font-mono text-white font-bold">{stats.archived}</p>
-                    <p className="text-gray-400 font-mono text-xs">Archived</p>
+                    <p className="text-xl font-mono text-white font-bold">{stats.resolved}</p>
+                    <p className="text-gray-400 font-mono text-xs">Resolved</p>
                   </div>
                 </div>
               </div>
@@ -320,9 +308,8 @@ export default function AdminContacts() {
                   >
                     <option value="all">All Status</option>
                     <option value="new">New</option>
-                    <option value="read">Read</option>
-                    <option value="replied">Replied</option>
-                    <option value="archived">Archived</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
                   </select>
                 </div>
               </div>
@@ -467,7 +454,7 @@ export default function AdminContacts() {
               <div className="border-t border-gray-700 pt-6">
                 <p className="text-sm font-mono text-gray-400 mb-3">Update Status</p>
                 <div className="flex flex-wrap gap-2">
-                  {['new', 'read', 'replied', 'archived'].map((status) => (
+                  {(['new', 'in_progress', 'resolved'] as const).map((status) => (
                     <button
                       key={status}
                       onClick={() => handleStatusChange(selectedContact.id, status)}
@@ -478,7 +465,7 @@ export default function AdminContacts() {
                           : 'bg-gray-600 hover:bg-gray-700 text-white'
                       }`}
                     >
-                      Mark as {status.charAt(0).toUpperCase() + status.slice(1)}
+                      Mark as {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
                     </button>
                   ))}
                 </div>
@@ -487,6 +474,7 @@ export default function AdminContacts() {
           </motion.div>
         </div>
       )}
-    </AdminLayout>
+      </AdminLayout>
+    </AdminProtectedRoute>
   )
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { Code, Users, Zap, Target, Award, Coffee } from 'lucide-react'
+import { Code, Users, Zap, Target, Coffee } from 'lucide-react'
 
 const About: React.FC = () => {
   const values = [
