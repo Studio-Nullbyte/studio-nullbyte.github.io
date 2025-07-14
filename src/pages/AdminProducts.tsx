@@ -19,6 +19,7 @@ import {
 import { useAdmin, type Category } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { useLoadingWithTimeout } from '../utils/timeouts'
 
 interface Product {
   id: string
@@ -47,7 +48,7 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsLoading, setProductsLoading] = useLoadingWithTimeout(true, 8000, 'AdminProducts data fetch')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [showActiveOnly, setShowActiveOnly] = useState(false)

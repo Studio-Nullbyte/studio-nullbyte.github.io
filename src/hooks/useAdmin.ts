@@ -69,6 +69,7 @@ interface Order {
 interface Category {
   id: string
   name: string
+  slug: string
   description: string | null
   is_active: boolean
   created_at: string
@@ -90,12 +91,28 @@ export function useAdmin() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
 
+  // Emergency timeout to prevent infinite loading
+  useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('🚨 useAdmin: Emergency timeout reached - forcing loading to false')
+        setLoading(false)
+      }
+    }, 8000)
+
+    return () => clearTimeout(emergencyTimeout)
+  }, [loading])
+
   // Check if user is admin
   useEffect(() => {
     const checkAdminStatus = () => {
+      console.log('🔍 useAdmin: Checking admin status for profile:', profile)
       if (profile) {
-        setIsAdmin(profile.role === 'admin')
+        const adminStatus = profile.role === 'admin'
+        console.log(`👑 useAdmin: Admin status:`, adminStatus)
+        setIsAdmin(adminStatus)
       } else {
+        console.log('👤 useAdmin: No profile found - not admin')
         setIsAdmin(false)
       }
       setLoading(false)
@@ -510,12 +527,13 @@ export function useAdmin() {
     }
   }
 
-  const createCategory = async (category: { name: string; description?: string }) => {
+  const createCategory = async (category: { name: string; slug: string; description?: string }) => {
     try {
       const { data, error } = await supabase
         .from('categories')
         .insert({
           name: category.name,
+          slug: category.slug,
           description: category.description || null,
           is_active: true
         })
@@ -531,7 +549,7 @@ export function useAdmin() {
     }
   }
 
-  const updateCategory = async (categoryId: string, updates: { name?: string; description?: string; is_active?: boolean }) => {
+  const updateCategory = async (categoryId: string, updates: { name?: string; slug?: string; description?: string; is_active?: boolean }) => {
     try {
       const { data, error } = await supabase
         .from('categories')

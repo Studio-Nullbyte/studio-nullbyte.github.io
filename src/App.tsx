@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { AuthDebugger } from './components/AuthDebugger'
+import { LoadingDebugger } from './components/LoadingDebugger'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
@@ -51,6 +52,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-black text-white">
         <Header />
         <AuthDebugger />
+        <LoadingDebugger />
         <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}

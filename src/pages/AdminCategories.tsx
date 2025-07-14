@@ -15,6 +15,7 @@ import {
 import { useAdmin, type Category } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { generateUniqueSlug } from '../utils/slugify'
 
 export default function AdminCategories() {
   const { isAdmin, loading, getCategories, createCategory, updateCategory, deleteCategory } = useAdmin()
@@ -34,6 +35,7 @@ export default function AdminCategories() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    slug: '',
     is_active: true
   })
 
@@ -92,6 +94,7 @@ export default function AdminCategories() {
     setFormData({
       name: '',
       description: '',
+      slug: '',
       is_active: true
     })
     setEditingCategory(null)
@@ -109,6 +112,7 @@ export default function AdminCategories() {
     setFormData({
       name: category.name,
       description: category.description || '',
+      slug: category.slug || '',
       is_active: category.is_active
     })
     setEditingCategory(category)
@@ -126,6 +130,7 @@ export default function AdminCategories() {
         // Update existing category
         const categoryData = {
           name: formData.name.trim(),
+          slug: formData.slug.trim(),
           description: formData.description.trim() || undefined,
           is_active: formData.is_active
         }
@@ -158,6 +163,7 @@ export default function AdminCategories() {
 
         const categoryData = {
           name: formData.name.trim(),
+          slug: formData.slug || generateUniqueSlug(formData.name.trim(), categories.map(cat => cat.slug)),
           description: formData.description.trim() || undefined
         }
         
@@ -173,6 +179,7 @@ export default function AdminCategories() {
           const newCategory: Category = {
             id: result.data.id,
             name: categoryData.name,
+            slug: categoryData.slug,
             description: categoryData.description || null,
             is_active: true,
             created_at: new Date().toISOString(),
@@ -219,6 +226,21 @@ export default function AdminCategories() {
       active: categories.filter(c => c.is_active).length,
       inactive: categories.filter(c => !c.is_active).length
     }
+  }
+
+  // Auto-generate slug when name changes (only for new categories)
+  const handleNameChange = (name: string) => {
+    setFormData(prev => {
+      const newData = { ...prev, name }
+      
+      // Auto-generate slug only for new categories (not when editing)
+      if (!editingCategory) {
+        const existingSlugs = categories.map(cat => cat.slug)
+        newData.slug = generateUniqueSlug(name, existingSlugs)
+      }
+      
+      return newData
+    })
   }
 
   if (loading || categoriesLoading) {
@@ -444,11 +466,29 @@ export default function AdminCategories() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => handleNameChange(e.target.value)}
                     className="w-full bg-code-gray border border-gray-600 px-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
                     placeholder="Enter category name"
                     required
                   />
+                </div>
+
+                {/* Slug */}
+                <div>
+                  <label className="block text-sm font-mono text-gray-300 mb-2">
+                    URL Slug <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                    className="w-full bg-code-gray border border-gray-600 px-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
+                    placeholder="url-friendly-slug"
+                    required
+                  />
+                  <p className="text-gray-500 font-mono text-xs mt-1">
+                    Auto-generated from name. Used in URLs (e.g., /category/web-templates)
+                  </p>
                 </div>
 
                 {/* Description */}

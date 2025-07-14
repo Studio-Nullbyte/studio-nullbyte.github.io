@@ -25,35 +25,61 @@ export function useAuth(): AuthState & AuthActions {
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<any | null>(null)
 
-  // Timeout to prevent infinite loading
+  // Emergency timeout to prevent infinite loading (10 seconds)
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const emergencyTimeout = setTimeout(() => {
       if (loading) {
+        console.warn('🚨 useAuth: Emergency timeout reached - forcing loading to false')
         setLoading(false)
       }
-    }, 10000) // 10 second timeout
+    }, 10000)
 
-    return () => clearTimeout(timeout)
+    return () => clearTimeout(emergencyTimeout)
   }, [loading])
 
-  // Fetch user profile from database
-  const fetchProfile = async (userId: string) => {
+  // Fetch user profile from database with retry
+  const fetchProfile = async (userId: string, retryCount = 0): Promise<any | null> => {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+      console.log(`🔄 useAuth: Fetching profile for user ${userId} (attempt ${retryCount + 1})`)
+      
+      // Create a timeout promise that rejects after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      })
+      
+      // Race the profile fetch against the timeout
+      const result = await Promise.race([
+        supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single(),
+        timeoutPromise
+      ])
+      
+      const { data, error } = result as any
       
       if (error) {
         if (error.code === 'PGRST116') {
-          // No profile found for user, this might be normal for new users
+          console.log('📝 useAuth: No profile found for user (normal for new users)')
+          return null
         }
-        return null
+        throw error
       }
       
+      console.log('✅ useAuth: Profile fetched successfully')
       return data
     } catch (error) {
+      console.error(`❌ useAuth: Error fetching profile (attempt ${retryCount + 1}):`, error)
+      
+      // Retry once on failure (but not on timeout)
+      if (retryCount < 1 && error instanceof Error && !error.message.includes('timeout')) {
+        console.log('🔄 useAuth: Retrying profile fetch...')
+        await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retry
+        return fetchProfile(userId, retryCount + 1)
+      }
+      
+      console.warn('⚠️ useAuth: Profile fetch failed - continuing without profile')
       return null
     }
   }
@@ -67,25 +93,43 @@ export function useAuth(): AuthState & AuthActions {
   }
 
   useEffect(() => {
+    console.log('🚀 useAuth: Initializing auth...')
+    
     // Get initial session
     const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('🔍 useAuth: Getting initial session...')
+        
+        // Add timeout for session fetch
+        const sessionPromise = supabase.auth.getSession()
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Session fetch timeout')), 8000)
+        })
+        
+        const result = await Promise.race([sessionPromise, timeoutPromise])
+        const { data: { session }, error } = result as any
         
         if (error) {
-          // Still continue with initialization even if there's an error
+          console.warn('⚠️ useAuth: Session fetch error (continuing anyway):', error)
         }
         
+        console.log(`📋 useAuth: Initial session:`, session ? 'Found' : 'None')
         setSession(session)
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          console.log('👤 useAuth: Fetching user profile...')
           const profileData = await fetchProfile(session.user.id)
           setProfile(profileData)
+        } else {
+          setProfile(null)
         }
         
+        console.log('✅ useAuth: Initial auth setup complete')
+        console.log('🔄 useAuth: Setting loading to false')
         setLoading(false)
       } catch (error) {
+        console.error('❌ useAuth: Error during auth initialization:', error)
         // Ensure loading is set to false even if there's an error
         setLoading(false)
       }
@@ -98,18 +142,22 @@ export function useAuth(): AuthState & AuthActions {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_, session) => {
       try {
+        console.log('🔄 useAuth: Auth state changed:', session ? 'User signed in' : 'User signed out')
         setSession(session)
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          console.log('👤 useAuth: Fetching updated profile...')
           const profileData = await fetchProfile(session.user.id)
           setProfile(profileData)
         } else {
           setProfile(null)
         }
         
+        console.log('🔄 useAuth: Setting loading to false (auth change)')
         setLoading(false)
       } catch (error) {
+        console.error('❌ useAuth: Error during auth state change:', error)
         // Ensure loading is set to false even if there's an error
         setLoading(false)
       }
