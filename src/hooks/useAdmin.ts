@@ -87,7 +87,7 @@ interface ContactSubmission {
 }
 
 export function useAdmin() {
-  const { profile } = useAuthContext()
+  const { profile, loading: authLoading } = useAuthContext()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
 
@@ -103,10 +103,17 @@ export function useAdmin() {
     return () => clearTimeout(emergencyTimeout)
   }, [loading])
 
-  // Check if user is admin
+  // Check if user is admin - wait for both auth and admin loading to complete
   useEffect(() => {
     const checkAdminStatus = () => {
-      console.log('🔍 useAdmin: Checking admin status for profile:', profile)
+      console.log('🔍 useAdmin: Checking admin status. authLoading:', authLoading, 'profile:', profile)
+      
+      // Don't make admin determination until auth is fully loaded
+      if (authLoading) {
+        console.log('⏳ useAdmin: Auth still loading - waiting...')
+        return
+      }
+      
       if (profile) {
         const adminStatus = profile.role === 'admin'
         console.log(`👑 useAdmin: Admin status:`, adminStatus)
@@ -119,7 +126,7 @@ export function useAdmin() {
     }
 
     checkAdminStatus()
-  }, [profile])
+  }, [profile, authLoading])
 
   // Admin Statistics
   const getAdminStats = async (): Promise<AdminStats> => {

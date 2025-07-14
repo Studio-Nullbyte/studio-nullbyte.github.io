@@ -17,8 +17,8 @@ import {
   X
 } from 'lucide-react'
 import { useAdmin, type Category } from '../hooks/useAdmin'
-import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import AdminProtectedRoute from '../components/AdminProtectedRoute'
 import { useLoadingWithTimeout } from '../utils/timeouts'
 
 interface Product {
@@ -42,8 +42,7 @@ interface Product {
 }
 
 export default function AdminProducts() {
-  const { isAdmin, loading, getProducts, getCategories, createProduct, updateProduct, deleteProduct } = useAdmin()
-  const navigate = useNavigate()
+  const { isAdmin, getProducts, getCategories, createProduct, updateProduct, deleteProduct } = useAdmin()
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -72,11 +71,8 @@ export default function AdminProducts() {
     active: true
   })
 
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate('/')
-    }
-  }, [isAdmin, loading, navigate])
+  // Remove the problematic redirect - AdminProtectedRoute will handle it
+  // The old useEffect with navigate('/') was causing premature redirects
 
   useEffect(() => {
     const fetchData = async () => {
@@ -229,24 +225,23 @@ export default function AdminProducts() {
     }
   }
 
-  if (loading || productsLoading) {
+  if (productsLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
-      </div>
+      <AdminProtectedRoute>
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-violet"></div>
+        </div>
+      </AdminProtectedRoute>
     )
   }
 
-  if (!isAdmin) {
-    return null
-  }
-
   return (
-    <AdminLayout>
-      <Helmet>
-        <title>Manage Products - Admin - Studio Nullbyte</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+    <AdminProtectedRoute>
+      <AdminLayout>
+        <Helmet>
+          <title>Manage Products - Admin - Studio Nullbyte</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
 
       <div className="pb-6">
         <div className="w-full px-4 py-6">
@@ -690,6 +685,7 @@ export default function AdminProducts() {
           </motion.div>
         </div>
       )}
-    </AdminLayout>
+      </AdminLayout>
+    </AdminProtectedRoute>
   )
 }
