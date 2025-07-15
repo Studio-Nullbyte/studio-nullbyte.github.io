@@ -22,6 +22,7 @@ interface Product {
   tags: string[]
   featured: boolean
   active: boolean
+  stripe_price_id?: string | null
   created_at: string
   updated_at: string
 }
@@ -79,7 +80,8 @@ const Product: React.FC = () => {
         id: product.id,
         title: product.title,
         price: product.price,
-        image_url: product.image_url
+        image_url: product.image_url,
+        stripe_price_id: product.stripe_price_id
       })
       
       // Show success toast
@@ -110,7 +112,8 @@ const Product: React.FC = () => {
           id: product.id,
           title: product.title,
           price: product.price,
-          image_url: product.image_url
+          image_url: product.image_url,
+          stripe_price_id: product.stripe_price_id
         })
       }
       

@@ -13,8 +13,17 @@ const OrderConfirmation: React.FC = () => {
     orderId: `ORD-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
     paymentId: `PAY-${Math.random().toString(36).substr(2, 12)}`,
     amount: 0,
+    subtotal: 0,
+    tax: 0,
     items: [],
     paymentMethod: 'Credit Card'
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount)
   }
 
   return (
@@ -113,6 +122,50 @@ const OrderConfirmation: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Price Breakdown */}
+              {orderDetails.subtotal && (
+                <div className="mt-6 pt-6 border-t border-gray-700">
+                  <h3 className="text-lg font-mono font-bold mb-4">Order Summary</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-mono">
+                      <span className="text-gray-400">Subtotal:</span>
+                      <span>{formatCurrency(orderDetails.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between font-mono">
+                      <span className="text-gray-400">Tax:</span>
+                      <span>{formatCurrency(orderDetails.tax || 0)}</span>
+                    </div>
+                    <div className="flex justify-between font-mono text-lg font-bold border-t border-gray-700 pt-2 mt-2">
+                      <span className="text-electric-violet">Total:</span>
+                      <span className="text-electric-violet">{formatCurrency(orderDetails.amount)}</span>
+                    </div>
+                    <div className="text-xs text-gray-400 text-center mt-3">
+                      <span className="inline-block">🔄 Digital products - no shipping required</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Order Items */}
+              {orderDetails.items && orderDetails.items.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-700">
+                  <h3 className="text-lg font-mono font-bold mb-4">Items Ordered</h3>
+                  <div className="space-y-3">
+                    {orderDetails.items.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-code-gray-dark rounded-sm">
+                        <div>
+                          <div className="font-mono font-bold">{item.title}</div>
+                          <div className="font-mono text-sm text-gray-400">Qty: {item.quantity}</div>
+                        </div>
+                        <div className="font-mono text-electric-violet">
+                          {formatCurrency(item.price * item.quantity)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             {/* What's Next */}

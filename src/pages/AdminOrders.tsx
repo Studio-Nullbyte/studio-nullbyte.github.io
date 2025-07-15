@@ -15,11 +15,13 @@ import {
   CheckCircle,
   Clock,
   X,
-  Save
+  Save,
+  ExternalLink
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { checkDatabaseTables } from '../utils/dbChecker'
 
 interface Order {
   id: string
@@ -95,18 +97,36 @@ export default function AdminOrders() {
     const fetchOrders = async () => {
       if (isAdmin) {
         try {
+          console.log('AdminOrders: Starting to fetch orders...')
           const ordersData = await getOrders()
+          console.log('AdminOrders: Orders fetched successfully:', ordersData)
           setOrders(ordersData)
+          setError('') // Clear any previous errors
         } catch (error) {
-          setError('Failed to load orders')
+          console.error('AdminOrders: Failed to load orders:', error)
+          setError(`Failed to load orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
         } finally {
+          console.log('AdminOrders: Setting ordersLoading to false')
           setOrdersLoading(false)
         }
+      } else {
+        setOrdersLoading(false)
       }
     }
 
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (ordersLoading) {
+        console.warn('AdminOrders: Timeout reached, forcing loading to false')
+        setOrdersLoading(false)
+        setError('Request timed out. Please try refreshing the page.')
+      }
+    }, 10000) // 10 second timeout
+
     fetchOrders()
-  }, [isAdmin, getOrders])
+
+    return () => clearTimeout(timeoutId)
+  }, [isAdmin, getOrders, ordersLoading])
 
   // Filter orders
   useEffect(() => {
@@ -154,6 +174,29 @@ export default function AdminOrders() {
     })
     setEditingOrder(order)
     setIsEditModalOpen(true)
+  }
+
+  const handleRunDiagnostics = async () => {
+    console.log('Running database diagnostics...')
+    setError('')
+    
+    try {
+      const results = await checkDatabaseTables()
+      console.log('Database check results:', results)
+      
+      const missingTables = Object.entries(results)
+        .filter(([_, exists]) => !exists)
+        .map(([table]) => table)
+      
+      if (missingTables.length > 0) {
+        setError(`Missing or inaccessible tables: ${missingTables.join(', ')}. Please check your database setup.`)
+      } else {
+        setMessage('All database tables are accessible!')
+        setTimeout(() => setMessage(''), 3000)
+      }
+    } catch (error) {
+      setError(`Diagnostics failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   const handleUpdateOrder = async (e: React.FormEvent) => {
@@ -247,9 +290,18 @@ export default function AdminOrders() {
           >
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <ShoppingCart className="w-6 h-6 text-electric-violet" />
-                <h1 className="text-3xl font-mono text-white">Manage Orders</h1>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="w-6 h-6 text-electric-violet" />
+                  <h1 className="text-3xl font-mono text-white">Manage Orders</h1>
+                </div>
+                <button
+                  onClick={handleRunDiagnostics}
+                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-mono text-sm transition-colors"
+                >
+                  <Package className="w-4 h-4" />
+                  Run Diagnostics
+                </button>
               </div>
               <p className="text-gray-400 font-mono">
                 View and manage customer orders and transactions
@@ -383,9 +435,10 @@ export default function AdminOrders() {
                     <tr>
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Order ID</th>
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Customer</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Items</th>
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Amount</th>
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Status</th>
-                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Payment</th>
+                      {/* <th className="text-left p-4 font-mono text-gray-300 text-sm">Payment</th> */}
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Date</th>
                       <th className="text-left p-4 font-mono text-gray-300 text-sm">Actions</th>
                     </tr>
@@ -423,6 +476,30 @@ export default function AdminOrders() {
                             </div>
                           </td>
 
+                          {/* Order Items */}
+                          <td className="p-4">
+                            <div className="space-y-1">
+                              {order.order_items && order.order_items.length > 0 ? (
+                                order.order_items.map((item) => (
+                                  <div key={item.id} className="flex items-center gap-2">
+                                    <Link
+                                      to={`/products/${item.product_id}`}
+                                      className="flex items-center gap-1 text-electric-violet hover:text-electric-violet-light transition-colors font-mono text-xs group"
+                                    >
+                                      <span>{item.products.title}</span>
+                                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </Link>
+                                    <span className="text-gray-400 text-xs">
+                                      ({item.quantity}x)
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="font-mono text-gray-500 text-xs">No items</span>
+                              )}
+                            </div>
+                          </td>
+
                           {/* Amount */}
                           <td className="p-4">
                             <span className="font-mono text-electric-violet font-bold">
@@ -434,11 +511,10 @@ export default function AdminOrders() {
                           <td className="p-4">
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono border ${statusColors[order.status]}`}>
                               <StatusIcon className="w-3 h-3" />
-                              {order.status}
                             </span>
                           </td>
 
-                          {/* Payment */}
+                          {/* Payment
                           <td className="p-4">
                             <div>
                               <p className="font-mono text-white text-sm">
@@ -450,7 +526,7 @@ export default function AdminOrders() {
                                 </p>
                               )}
                             </div>
-                          </td>
+                          </td> */}
 
                           {/* Date */}
                           <td className="p-4">
@@ -578,6 +654,13 @@ export default function AdminOrders() {
                     <p className="text-2xl font-mono text-electric-violet font-bold">
                       {formatCurrency(selectedOrder.total_amount)}
                     </p>
+                    {selectedOrder.notes && selectedOrder.notes.includes('Subtotal:') && (
+                      <div className="mt-3 text-xs font-mono text-gray-400">
+                        {selectedOrder.notes.split(', ').map((part, index) => (
+                          <div key={index}>{part}</div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -590,12 +673,24 @@ export default function AdminOrders() {
                         <div key={item.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div>
-                              <p className="font-mono text-white text-sm">
-                                {item.products?.title}
-                              </p>
-                              <p className="font-mono text-gray-400 text-xs">
-                                Qty: {item.quantity}
-                              </p>
+                              <div className="flex items-center gap-2 mb-1">
+                                <Link
+                                  to={`/products/${item.product_id}`}
+                                  className="font-mono text-electric-violet hover:text-electric-violet-light transition-colors text-sm flex items-center gap-1 group"
+                                >
+                                  {item.products?.title}
+                                  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Link>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-mono text-gray-400 text-xs">
+                                  Item ID: #{item.id.slice(-8)}
+                                </p>
+                                <span className="text-gray-500">•</span>
+                                <p className="font-mono text-gray-400 text-xs">
+                                  Qty: {item.quantity}
+                                </p>
+                              </div>
                             </div>
                           </div>
                           <span className="font-mono text-electric-violet">

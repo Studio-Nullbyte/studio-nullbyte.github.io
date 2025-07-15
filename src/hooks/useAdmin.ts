@@ -422,7 +422,9 @@ export function useAdmin() {
   // Order Management
   const getOrders = async (): Promise<Order[]> => {
     try {
-      // First, try to get orders with a simple query
+      console.log('Starting getOrders...')
+      
+      // First, check if orders table exists by trying a simple query
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
@@ -430,61 +432,88 @@ export function useAdmin() {
 
       if (ordersError) {
         console.error('Error fetching orders:', ordersError)
+        
+        // If table doesn't exist, return empty array instead of throwing
+        if (ordersError.message.includes('table') || ordersError.message.includes('does not exist')) {
+          console.warn('Orders table does not exist, returning empty array')
+          return []
+        }
+        
         throw ordersError
       }
 
+      console.log('Orders fetched:', ordersData?.length || 0)
+
       if (!ordersData || ordersData.length === 0) {
+        console.log('No orders found, returning empty array')
         return []
       }
 
       // Get unique user IDs from orders
       const userIds = [...new Set(ordersData.map(order => order.user_id))]
+      console.log('User IDs to fetch:', userIds)
 
-      // Fetch user profiles separately
-      const { data: userProfiles, error: userError } = await supabase
-        .from('user_profiles')
-        .select('id, full_name, email')
-        .in('id', userIds)
+      let userProfilesMap = new Map()
 
-      if (userError) {
-        // Error fetching user profiles
-      }
+      // Try to fetch user profiles, but don't fail if table doesn't exist
+      try {
+        const { data: userProfiles, error: userError } = await supabase
+          .from('user_profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds)
 
-      // Create a map of user profiles for quick lookup
-      const userProfilesMap = new Map()
-      if (userProfiles) {
-        userProfiles.forEach(profile => {
-          userProfilesMap.set(profile.id, profile)
-        })
-      }
-
-      // Get order items for all orders
-      const orderIds = ordersData.map(order => order.id)
-      const { data: orderItems, error: itemsError } = await supabase
-        .from('order_items')
-        .select(`
-          id,
-          order_id,
-          product_id,
-          price,
-          quantity,
-          products(title)
-        `)
-        .in('order_id', orderIds)
-
-      if (itemsError) {
-        // Error fetching order items
-      }
-
-      // Create a map of order items grouped by order_id
-      const orderItemsMap = new Map()
-      if (orderItems) {
-        orderItems.forEach(item => {
-          if (!orderItemsMap.has(item.order_id)) {
-            orderItemsMap.set(item.order_id, [])
+        if (userError) {
+          console.error('Error fetching user profiles:', userError)
+        } else {
+          console.log('User profiles fetched:', userProfiles?.length || 0)
+          
+          // Create a map of user profiles for quick lookup
+          if (userProfiles) {
+            userProfiles.forEach(profile => {
+              userProfilesMap.set(profile.user_id, profile)
+            })
           }
-          orderItemsMap.get(item.order_id).push(item)
-        })
+        }
+      } catch (profileError) {
+        console.warn('Could not fetch user profiles:', profileError)
+      }
+
+      let orderItemsMap = new Map()
+
+      // Try to fetch order items, but don't fail if table doesn't exist
+      try {
+        const orderIds = ordersData.map(order => order.id)
+        console.log('Order IDs to fetch items for:', orderIds)
+        
+        const { data: orderItems, error: itemsError } = await supabase
+          .from('order_items')
+          .select(`
+            id,
+            order_id,
+            product_id,
+            price,
+            quantity,
+            products(title)
+          `)
+          .in('order_id', orderIds)
+
+        if (itemsError) {
+          console.error('Error fetching order items:', itemsError)
+        } else {
+          console.log('Order items fetched:', orderItems?.length || 0)
+          
+          // Create a map of order items grouped by order_id
+          if (orderItems) {
+            orderItems.forEach(item => {
+              if (!orderItemsMap.has(item.order_id)) {
+                orderItemsMap.set(item.order_id, [])
+              }
+              orderItemsMap.get(item.order_id).push(item)
+            })
+          }
+        }
+      } catch (itemsError) {
+        console.warn('Could not fetch order items:', itemsError)
       }
 
       // Combine all data
@@ -494,9 +523,17 @@ export function useAdmin() {
         order_items: orderItemsMap.get(order.id) || []
       }))
 
+      console.log('Enriched orders prepared:', enrichedOrders.length)
       return enrichedOrders
     } catch (error) {
       console.error('Error fetching orders:', error)
+      
+      // If it's a table not found error, return empty array instead of throwing
+      if (error instanceof Error && (error.message.includes('table') || error.message.includes('does not exist'))) {
+        console.warn('Database tables not found, returning empty array')
+        return []
+      }
+      
       throw error
     }
   }

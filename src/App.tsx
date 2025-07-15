@@ -12,6 +12,8 @@ import Products from './pages/Products'
 import Product from './pages/Product'
 import Checkout from './pages/Checkout'
 import OrderConfirmation from './pages/OrderConfirmation'
+import Success from './pages/Success'
+import Cancel from './pages/Cancel'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Auth from './pages/Auth'
@@ -71,6 +73,8 @@ const App: React.FC = () => {
               <Route path="/product/:id" element={<Product />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/success" element={<Success />} />
+              <Route path="/cancel" element={<Cancel />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               

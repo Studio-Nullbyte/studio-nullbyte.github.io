@@ -6,11 +6,12 @@ interface CartItem {
   price: number
   image_url: string | null
   quantity: number
+  stripe_price_id?: string | null  // Optional until database is migrated
 }
 
 interface CartContextType {
   items: CartItem[]
-  addToCart: (product: { id: string; title: string; price: number; image_url: string | null }) => void
+  addToCart: (product: { id: string; title: string; price: number; image_url: string | null; stripe_price_id?: string | null }) => void
   removeFromCart: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -57,7 +58,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   }, [items])
 
-  const addToCart = (product: { id: string; title: string; price: number; image_url: string | null }) => {
+  const addToCart = (product: { id: string; title: string; price: number; image_url: string | null; stripe_price_id?: string | null }) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id)
       

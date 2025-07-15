@@ -6,6 +6,7 @@ import { CreditCard, Lock, User, Mail, MapPin, Phone, ArrowLeft, Check } from 'l
 import { useCart } from '../contexts/CartContext'
 import { useToast } from '../contexts/ToastContext'
 import { useAuthContext } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import StripePayment from '../components/payments/StripePayment'
 import PayPalPayment from '../components/payments/PayPalPayment'
 import SquarePayment from '../components/payments/SquarePayment'
@@ -35,7 +36,7 @@ const paymentMethods: PaymentMethod[] = [
     id: 'stripe',
     name: 'Credit/Debit Card',
     icon: '💳',
-    description: 'Visa, Mastercard, American Express',
+    description: 'Visa, Mastercard, American Express • Recommended',
     color: 'bg-blue-600'
   },
   {
@@ -58,7 +59,7 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate()
   const { items, getTotalPrice, clearCart } = useCart()
   const { showToast } = useToast()
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   
   const [selectedPayment, setSelectedPayment] = useState<string>('stripe')
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
@@ -92,54 +93,120 @@ const Checkout: React.FC = () => {
     }))
   }
 
-  const validateForm = (): boolean => {
+  // Validation function without side effects (for disabled state)
+  const isFormValid = (): boolean => {
     const required = ['firstName', 'lastName', 'email', 'address', 'city', 'state', 'zipCode']
     const missing = required.filter(field => !customerInfo[field as keyof CustomerInfo])
     
     if (missing.length > 0) {
-      showToast({
-        type: 'error',
-        title: 'Missing Information',
-        message: `Please fill in: ${missing.join(', ')}`
-      })
       return false
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(customerInfo.email)) {
-      showToast({
-        type: 'error',
-        title: 'Invalid Email',
-        message: 'Please enter a valid email address'
-      })
       return false
     }
 
     return true
   }
 
-  const handlePaymentSuccess = (paymentId: string) => {
-    // Clear cart and show success
-    clearCart()
-    
-    showToast({
-      type: 'success',
-      title: 'Order Successful!',
-      message: `Your order has been placed successfully. Payment ID: ${paymentId}`
-    })
-    
-    // Navigate to order confirmation page
-    navigate('/order-confirmation', { 
-      replace: true,
-      state: {
-        orderId: `ORD-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-        paymentId: paymentId,
-        amount: total,
-        items: items,
-        paymentMethod: paymentMethods.find(p => p.id === selectedPayment)?.name || 'Credit Card'
+  const createOrder = async (paymentId: string) => {
+    try {
+      if (!user) {
+        throw new Error('User not authenticated')
       }
-    })
+
+      // Create the order record
+      const orderData = {
+        user_id: user.id,
+        total_amount: total,
+        status: 'completed' as const,
+        payment_method: paymentMethods.find(p => p.id === selectedPayment)?.name || 'Credit Card',
+        payment_id: paymentId,
+        notes: `Subtotal: $${getTotalPrice().toFixed(2)}, Tax: $${tax.toFixed(2)} (Digital products - no shipping)`
+      }
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([orderData])
+        .select()
+        .single()
+
+      if (orderError) {
+        console.error('Error creating order:', orderError)
+        throw orderError
+      }
+
+      // Create order items
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        product_id: item.id,
+        price: item.price,
+        quantity: item.quantity
+      }))
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems)
+
+      if (itemsError) {
+        console.error('Error creating order items:', itemsError)
+        throw itemsError
+      }
+
+      return order.id
+    } catch (error) {
+      console.error('Failed to create order:', error)
+      throw error
+    }
+  }
+
+  const handlePaymentSuccess = async (paymentId: string) => {
+    try {
+      // Validate form one more time before processing
+      if (!isFormValid()) {
+        showToast({
+          type: 'error',
+          title: 'Form Incomplete',
+          message: 'Please fill in all required fields before completing your order.'
+        })
+        return
+      }
+
+      // Create order in database
+      const orderId = await createOrder(paymentId)
+      
+      // Clear cart and show success
+      clearCart()
+      
+      showToast({
+        type: 'success',
+        title: 'Order Successful!',
+        message: `Your order has been placed successfully. Order ID: ${orderId.slice(-8)}`
+      })
+      
+      // Navigate to order confirmation page
+      navigate('/order-confirmation', { 
+        replace: true,
+        state: {
+          orderId: orderId,
+          paymentId: paymentId,
+          amount: total,
+          subtotal: getTotalPrice(),
+          tax: tax,
+          items: items,
+          paymentMethod: paymentMethods.find(p => p.id === selectedPayment)?.name || 'Credit Card'
+        }
+      })
+    } catch (error) {
+      console.error('Order creation failed:', error)
+      showToast({
+        type: 'error',
+        title: 'Order Failed',
+        message: 'Failed to create order. Please try again or contact support.'
+      })
+    }
   }
 
   const handlePaymentError = (error: string) => {
@@ -151,8 +218,7 @@ const Checkout: React.FC = () => {
   }
 
   const tax = getTotalPrice() * 0.08 // 8% tax
-  const shipping = getTotalPrice() > 50 ? 0 : 9.99 // Free shipping over $50
-  const total = getTotalPrice() + tax + shipping
+  const total = getTotalPrice() + tax // No shipping for digital products
 
   if (items.length === 0) {
     return null // Will redirect in useEffect
@@ -332,13 +398,18 @@ const Checkout: React.FC = () => {
                     <motion.div
                       key={method.id}
                       whileHover={{ scale: 1.02 }}
-                      className={`p-4 border rounded-sm cursor-pointer transition-all ${
+                      className={`p-4 border rounded-sm cursor-pointer transition-all relative ${
                         selectedPayment === method.id
                           ? 'border-electric-violet bg-electric-violet bg-opacity-10'
                           : 'border-gray-700 hover:border-gray-600'
-                      }`}
+                      } ${method.id === 'stripe' ? 'ring-1 ring-blue-500/30' : ''}`}
                       onClick={() => setSelectedPayment(method.id)}
                     >
+                      {method.id === 'stripe' && (
+                        <div className="absolute -top-2 -right-2 bg-electric-violet text-white px-2 py-1 rounded-full text-xs font-mono">
+                          Recommended
+                        </div>
+                      )}
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-sm ${method.color} flex items-center justify-center text-lg`}>
                           {method.icon}
@@ -358,10 +429,21 @@ const Checkout: React.FC = () => {
                 {/* Payment Component */}
                 {selectedPayment === 'stripe' && (
                   <StripePayment
-                    amount={total}
-                    onSuccess={handlePaymentSuccess}
+                    product={{
+                      id: `order-${Date.now()}`,
+                      name: `Studio Nullbyte Order (${items.length} item${items.length > 1 ? 's' : ''})`,
+                      price: total,
+                      description: items.map(item => `${item.title} ($${item.price.toFixed(2)})`).join(', '),
+                      image: items[0]?.image_url || undefined,
+                      stripePriceId: undefined, // Combined orders don't use individual Price IDs
+                      cartItems: items.map(item => ({
+                        priceId: item.stripe_price_id,
+                        quantity: item.quantity
+                      }))
+                    }}
+                    onSuccess={() => handlePaymentSuccess('stripe_checkout_session')}
                     onError={handlePaymentError}
-                    disabled={!validateForm()}
+                    disabled={!isFormValid()}
                   />
                 )}
                 
@@ -370,7 +452,7 @@ const Checkout: React.FC = () => {
                     amount={total}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
-                    disabled={!validateForm()}
+                    disabled={!isFormValid()}
                   />
                 )}
                 
@@ -379,7 +461,7 @@ const Checkout: React.FC = () => {
                     amount={total}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
-                    disabled={!validateForm()}
+                    disabled={!isFormValid()}
                   />
                 )}
               </div>
@@ -432,15 +514,12 @@ const Checkout: React.FC = () => {
                     <span className="text-gray-400">Tax:</span>
                     <span className="font-mono">${tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Shipping:</span>
-                    <span className="font-mono">
-                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-                    </span>
-                  </div>
                   <div className="flex justify-between text-lg font-bold border-t border-gray-700 pt-2">
                     <span>Total:</span>
                     <span className="font-mono text-electric-violet">${total.toFixed(2)}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 text-center mt-2">
+                    <span className="inline-block">🔄 Digital products - instant delivery</span>
                   </div>
                 </div>
 
