@@ -22,11 +22,16 @@ Click **"New repository secret"** and add each of these:
 - **Name**: `VITE_STRIPE_PUBLISHABLE_KEY`  
 - **Value**: `pk_live_51RlCWuP59y3jEuN3gIe4hsjMbigZtdb9iIGCO7jk5a0O9lNFYRl5iJTlJTOZseBW8KPWTEmQh6ApI2y9gcno10A800CSEfdgPo` (from your .env file)
 
+#### Secret 4: VITE_CRISP_WEBSITE_ID
+- **Name**: `VITE_CRISP_WEBSITE_ID`
+- **Value**: `your-crisp-website-id` (from Crisp Dashboard after signup)
+
 ### 3. Verify Setup
 After adding all secrets, you should see:
 - ✅ VITE_SUPABASE_URL
 - ✅ VITE_SUPABASE_ANON_KEY  
 - ✅ VITE_STRIPE_PUBLISHABLE_KEY
+- ✅ VITE_CRISP_WEBSITE_ID
 
 ### 4. Test the Build
 1. **Commit and push** any changes to trigger the GitHub Action

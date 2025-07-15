@@ -18,6 +18,8 @@ Studio Nullbyte is a multi-page React + Tailwind CSS website for selling digital
 - **Contact Form**: Real-time submissions with database storage
 - **User Authentication**: Registration, login, and profile management
 - **Database**: PostgreSQL with Row Level Security policies
+- **Live Chat**: Crisp Chat integration for customer support
+- **Stripe Payments**: GitHub Pages compatible checkout system
 
 ## Target Audience
 

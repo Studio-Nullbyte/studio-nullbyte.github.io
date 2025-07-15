@@ -7,6 +7,7 @@ import { ToastProvider } from './contexts/ToastContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import CrispChat from './components/CrispChat'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
@@ -152,6 +153,9 @@ const App: React.FC = () => {
           </motion.main>
         </AnimatePresence>
         <Footer />
+        
+        {/* Live Chat Widget */}
+        <CrispChat />
       </div>
         </ToastProvider>
       </CartProvider>
