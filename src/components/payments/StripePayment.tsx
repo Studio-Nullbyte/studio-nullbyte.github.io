@@ -5,6 +5,12 @@ import { loadStripe } from '@stripe/stripe-js'
 // Get the publishable key
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 
+// Debug: Log the key to see if it's loaded
+console.log('Environment variables:', {
+  STRIPE_PUBLISHABLE_KEY,
+  allEnvVars: import.meta.env
+})
+
 // Initialize Stripe
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null
 
@@ -127,9 +133,19 @@ const StripeCheckout: React.FC<StripePaymentProps> = ({
   if (!stripePromise) {
     return (
       <div className="p-4 bg-red-900/20 border border-red-500 rounded-sm">
-        <p className="text-red-400 font-mono text-sm">
-          Stripe configuration error: Missing VITE_STRIPE_PUBLISHABLE_KEY
+        <p className="text-red-400 font-mono text-sm mb-2">
+          <strong>Stripe configuration error:</strong>
         </p>
+        <div className="text-red-300 font-mono text-xs space-y-1">
+          <p>• VITE_STRIPE_PUBLISHABLE_KEY: {STRIPE_PUBLISHABLE_KEY ? '✅ Found' : '❌ Missing'}</p>
+          <p>• Key starts with 'pk_': {STRIPE_PUBLISHABLE_KEY?.startsWith('pk_') ? '✅ Valid format' : '❌ Invalid format'}</p>
+          <p>• Environment: {import.meta.env.MODE}</p>
+        </div>
+        <div className="mt-3 text-xs text-gray-400">
+          <p>1. Check your .env file contains VITE_STRIPE_PUBLISHABLE_KEY</p>
+          <p>2. Restart your development server</p>
+          <p>3. Ensure the key starts with 'pk_test_' or 'pk_live_'</p>
+        </div>
       </div>
     )
   }
