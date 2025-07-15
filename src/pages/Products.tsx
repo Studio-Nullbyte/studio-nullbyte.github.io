@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Filter, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import SEO from '../components/SEO'
 
 interface Product {
   id: string
@@ -112,12 +112,33 @@ const Products: React.FC = () => {
     }))
   ]
 
+  const structuredData = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Products - Studio Nullbyte",
+    "description": "Browse our collection of web templates, Notion templates, AI prompts, and more.",
+    "url": "https://studio-nullbyte.github.io/products",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Studio Nullbyte"
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Digital Products",
+      "numberOfItems": products.length
+    }
+  }, null, 2)
+
   return (
     <>
-      <Helmet>
-        <title>Products - Studio Nullbyte</title>
-        <meta name="description" content="Browse our collection of web templates, Notion templates, AI prompts, and more." />
-      </Helmet>
+      <SEO
+        title="Products - Studio Nullbyte"
+        description="Browse our collection of web templates, Notion templates, AI prompts, UI components, and document templates for developers and creators."
+        keywords="web templates, notion templates, AI prompts, UI components, react templates, developer tools, digital products, freelancer tools"
+        url="/products"
+        type="website"
+        structuredData={structuredData}
+      />
 
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Header */}

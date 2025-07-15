@@ -1,8 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { ArrowRight, Code, Palette, Zap, Users, Download, Contact } from 'lucide-react'
+import SEO from '../components/SEO'
+import { generateWebsiteSchema, generateOrganizationSchema } from '../utils/structuredData'
 
 const Home: React.FC = () => {
   const features = [
@@ -62,13 +63,33 @@ const Home: React.FC = () => {
     }
   ]
 
+  const structuredData = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Studio Nullbyte",
+    "url": "https://studio-nullbyte.github.io",
+    "description": "Modular tools for the design-minded developer. Clean. Branded. Ready to deploy.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Studio Nullbyte"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://studio-nullbyte.github.io/products?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }, null, 2)
+
   return (
     <>
-      <Helmet>
-        <title>Studio Nullbyte - Modular Design Tools</title>
-        <meta name="description" content="Modular tools for the design-minded developer. Clean. Branded. Ready to deploy." />
-        <meta name="keywords" content="templates, web templates, notion templates, AI prompts, developer tools" />
-      </Helmet>
+      <SEO
+        title="Studio Nullbyte - Modular Design Tools"
+        description="Modular tools for the design-minded developer. Clean. Branded. Ready to deploy."
+        keywords="templates, web templates, notion templates, AI prompts, developer tools, react templates, ui components, freelancers, digital products"
+        url="/"
+        type="website"
+        structuredData={structuredData}
+      />
 
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6">

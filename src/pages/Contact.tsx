@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Send, Mail, MessageCircle, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { submitContactForm } from '../lib/supabase'
+import SEO from '../components/SEO'
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -85,12 +85,28 @@ const Contact: React.FC = () => {
     }
   ]
 
+  const structuredData = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Studio Nullbyte",
+    "description": "Get in touch with Studio Nullbyte. We're here to help with your questions and projects.",
+    "url": "https://studio-nullbyte.github.io/contact",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Studio Nullbyte"
+    }
+  }, null, 2)
+
   return (
     <>
-      <Helmet>
-        <title>Contact - Studio Nullbyte</title>
-        <meta name="description" content="Get in touch with Studio Nullbyte. We're here to help with your questions and projects." />
-      </Helmet>
+      <SEO
+        title="Contact - Studio Nullbyte"
+        description="Get in touch with Studio Nullbyte. We're here to help with your questions, custom projects, and support requests."
+        keywords="contact studio nullbyte, support, custom projects, help, customer service"
+        url="/contact"
+        type="website"
+        structuredData={structuredData}
+      />
 
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Hero Section */}

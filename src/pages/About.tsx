@@ -1,7 +1,7 @@
 import React from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Code, Users, Zap, Target, Coffee } from 'lucide-react'
+import SEO from '../components/SEO'
 
 const About: React.FC = () => {
   const values = [
@@ -55,12 +55,28 @@ const About: React.FC = () => {
     }
   ]
 
+  const structuredData = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Studio Nullbyte",
+    "description": "Learn about Studio Nullbyte's mission to create modular tools for design-minded developers.",
+    "url": "https://studio-nullbyte.github.io/about",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Studio Nullbyte"
+    }
+  }, null, 2)
+
   return (
     <>
-      <Helmet>
-        <title>About - Studio Nullbyte</title>
-        <meta name="description" content="Learn about Studio Nullbyte's mission to create modular tools for design-minded developers." />
-      </Helmet>
+      <SEO
+        title="About - Studio Nullbyte"
+        description="Learn about Studio Nullbyte's mission to create modular tools for design-minded developers. Founded in 2023, we build quality templates and tools."
+        keywords="about studio nullbyte, company, mission, team, developer tools, template creators"
+        url="/about"
+        type="website"
+        structuredData={structuredData}
+      />
 
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Hero Section */}
