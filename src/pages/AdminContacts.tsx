@@ -85,16 +85,12 @@ export default function AdminContacts() {
   }, [contacts, searchTerm, statusFilter])
 
   const handleStatusChange = async (contactId: string, newStatus: 'new' | 'in_progress' | 'resolved') => {
-    console.log('🔄 AdminContacts: Attempting to change status', { contactId, newStatus })
     try {
       const result = await updateContactSubmissionStatus(contactId, newStatus)
-      console.log('📝 AdminContacts: Status change result', result)
       
       if (result.error) {
-        console.error('❌ AdminContacts: Status change failed', result.error)
         setError('Failed to update status: ' + (result.error instanceof Error ? result.error.message : String(result.error)))
       } else {
-        console.log('✅ AdminContacts: Status updated successfully')
         setMessage('Status updated successfully!')
         
         // Update local state
@@ -122,13 +118,11 @@ export default function AdminContacts() {
   }
 
   const openContactDetail = (contact: ContactSubmission) => {
-    console.log('👁️ AdminContacts: Opening contact detail', contact)
     setSelectedContact(contact)
     setIsDetailModalOpen(true)
     
     // Mark as in_progress if it's new (since 'read' is not a valid enum value)
     if (contact.status === 'new') {
-      console.log('📖 AdminContacts: Marking contact as in_progress')
       handleStatusChange(contact.id, 'in_progress')
     }
   }

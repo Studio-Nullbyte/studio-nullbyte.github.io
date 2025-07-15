@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
+import { ToastProvider } from './contexts/ToastContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { AuthDebugger } from './components/AuthDebugger'
-import { LoadingDebugger } from './components/LoadingDebugger'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
+import Checkout from './pages/Checkout'
+import OrderConfirmation from './pages/OrderConfirmation'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Auth from './pages/Auth'
@@ -49,11 +51,11 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-black text-white">
-        <Header />
-        <AuthDebugger />
-        <LoadingDebugger />
-        <AnimatePresence mode="wait">
+      <CartProvider>
+        <ToastProvider>
+          <div className="min-h-screen bg-black text-white">
+            <Header />
+            <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}
             initial="initial"
@@ -67,6 +69,8 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/product/:id" element={<Product />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               
@@ -145,6 +149,8 @@ const App: React.FC = () => {
         </AnimatePresence>
         <Footer />
       </div>
+        </ToastProvider>
+      </CartProvider>
     </AuthProvider>
   )
 }

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { Heart, Share2, ArrowLeft, Check } from 'lucide-react'
+import { Heart, Share2, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { useCart } from '../contexts/CartContext'
-import { useToast } from '../contexts/ToastContext'
 
 interface Product {
   id: string
@@ -29,12 +27,9 @@ interface Product {
 const Product: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { addToCart, isInCart } = useCart()
-  const { showToast } = useToast()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isAddingToCart, setIsAddingToCart] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -56,11 +51,13 @@ const Product: React.FC = () => {
           .single()
 
         if (error) {
+          console.error('Error fetching product:', error)
           setError('Product not found')
         } else {
           setProduct(data)
         }
       } catch (err) {
+        console.error('Error fetching product:', err)
         setError('Failed to load product')
       } finally {
         setLoading(false)
@@ -69,63 +66,6 @@ const Product: React.FC = () => {
 
     fetchProduct()
   }, [id])
-
-  const handleAddToCart = async () => {
-    if (!product) return
-    
-    setIsAddingToCart(true)
-    try {
-      addToCart({
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        image_url: product.image_url
-      })
-      
-      // Show success toast
-      showToast({
-        type: 'success',
-        title: 'Added to Cart!',
-        message: `${product.title} has been added to your cart.`
-      })
-    } catch (error) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to add item to cart. Please try again.'
-      })
-    } finally {
-      setIsAddingToCart(false)
-    }
-  }
-
-  const handleBuyNow = async () => {
-    if (!product) return
-    
-    setIsAddingToCart(true)
-    try {
-      // Add to cart if not already there
-      if (!isInCart(product.id)) {
-        addToCart({
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          image_url: product.image_url
-        })
-      }
-      
-      // Navigate to checkout
-      navigate('/checkout')
-    } catch (error) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to proceed to checkout. Please try again.'
-      })
-    } finally {
-      setIsAddingToCart(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -234,47 +174,9 @@ const Product: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 mb-6">
-                  <button 
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart || isInCart(product.id)}
-                    className={`flex-1 ${
-                      isInCart(product.id) 
-                        ? 'btn-secondary cursor-not-allowed' 
-                        : 'btn-primary'
-                    }`}
-                  >
-                    {isAddingToCart ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Adding...
-                      </span>
-                    ) : isInCart(product.id) ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Check className="w-4 h-4" />
-                        In Cart
-                      </span>
-                    ) : (
-                      `Add to Cart - $${product.price}`
-                    )}
+                  <button className="btn-primary flex-1">
+                    Add to Cart - ${product.price}
                   </button>
-                  
-                  <button 
-                    onClick={handleBuyNow}
-                    disabled={isAddingToCart}
-                    className="btn-primary flex-1"
-                  >
-                    {isAddingToCart ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Loading...
-                      </span>
-                    ) : (
-                      'Buy Now'
-                    )}
-                  </button>
-                </div>
-
-                <div className="flex gap-4 mb-8">
                   <button className="btn-secondary">
                     <Heart className="w-5 h-5" />
                   </button>

@@ -3,14 +3,18 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
+import CartModal from './CartModal'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuthContext()
+  const { getTotalItems } = useCart()
 
   const handleSignOut = async () => {
     try {
@@ -120,8 +124,16 @@ const Header: React.FC = () => {
 
           {/* Cart, User Menu, and Mobile Menu Button */}
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <button className="p-2 hover:bg-gray-800 rounded-sm transition-colors">
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 hover:bg-gray-800 rounded-sm transition-colors"
+            >
               <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-electric-violet text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
             </button>
             
             {/* User Authentication */}
@@ -372,6 +384,12 @@ const Header: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Cart Modal */}
+      <CartModal 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+      />
     </header>
   )
 }

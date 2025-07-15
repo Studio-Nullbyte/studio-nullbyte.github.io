@@ -17,7 +17,6 @@ export const withTimeout = <T>(
 ): Promise<T> => {
   const timeoutPromise = new Promise<T>((_, reject) => {
     setTimeout(() => {
-      console.warn(`⏰ Timeout: ${operation} took longer than ${timeoutMs}ms`)
       reject(new Error(`${operation} timeout after ${timeoutMs}ms`))
     }, timeoutMs)
   })
@@ -37,16 +36,12 @@ export const withSupabaseTimeout = async <T>(
   operation: string = 'Supabase query'
 ): Promise<T> => {
   try {
-    console.log(`🔄 Starting: ${operation}`)
     const result = await withTimeout(query, timeoutMs, operation) as T
-    console.log(`✅ Completed: ${operation}`)
     return result
   } catch (error) {
     if (error instanceof Error && error.message.includes('timeout')) {
-      console.error(`⏰ Timeout error in ${operation}:`, error.message)
       throw new Error(`${operation} timed out - please check your connection`)
     }
-    console.error(`❌ Error in ${operation}:`, error)
     throw error
   }
 }
@@ -57,8 +52,7 @@ export const withSupabaseTimeout = async <T>(
  * @param name Name for logging
  */
 export const createLoadingManager = (
-  timeoutMs: number = 10000,
-  name: string = 'component'
+  timeoutMs: number = 10000
 ) => {
   let timeoutId: NodeJS.Timeout | null = null
   
@@ -66,7 +60,7 @@ export const createLoadingManager = (
     if (timeoutId) globalThis.clearTimeout(timeoutId)
     
     timeoutId = setTimeout(() => {
-      console.warn(`🚨 Loading timeout for ${name} - forcing to false after ${timeoutMs}ms`)
+      // Loading timeout - forcing to false
       setLoading(false)
     }, timeoutMs)
   }
@@ -99,11 +93,10 @@ export const createLoadingManager = (
  */
 export const useLoadingWithTimeout = (
   initialLoading: boolean = true,
-  timeoutMs: number = 10000,
-  name: string = 'hook'
+  timeoutMs: number = 10000
 ) => {
   const [loading, setLoading] = useState(initialLoading)
-  const manager = createLoadingManager(timeoutMs, name)
+  const manager = createLoadingManager(timeoutMs)
   
   useEffect(() => {
     if (loading) {

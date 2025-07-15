@@ -99,7 +99,7 @@ export function useAdmin() {
   useEffect(() => {
     const emergencyTimeout = setTimeout(() => {
       if (loading) {
-        console.warn('🚨 useAdmin: Emergency timeout reached - forcing loading to false')
+        // Emergency timeout reached - forcing loading to false
         setLoading(false)
       }
     }, 60000) // Increased from 8s to 60s for better reliability
@@ -268,7 +268,6 @@ export function useAdmin() {
         }
       }) || []
 
-      console.log('Fetched users:', usersWithProfiles)
       return usersWithProfiles
     } catch (error) {
       console.error('Error fetching users:', error)
@@ -448,7 +447,7 @@ export function useAdmin() {
         .in('id', userIds)
 
       if (userError) {
-        console.warn('Error fetching user profiles:', userError)
+        // Error fetching user profiles
       }
 
       // Create a map of user profiles for quick lookup
@@ -474,7 +473,7 @@ export function useAdmin() {
         .in('order_id', orderIds)
 
       if (itemsError) {
-        console.warn('Error fetching order items:', itemsError)
+        // Error fetching order items
       }
 
       // Create a map of order items grouped by order_id
@@ -640,6 +639,94 @@ export function useAdmin() {
     }
   }
 
+  // Image Upload Management
+  const uploadProductImage = async (file: File): Promise<{ url: string | null; error: any }> => {
+    try {
+      // Validate file type and size
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        return { url: null, error: { message: 'Invalid file type. Please upload a valid image file.' } }
+      }
+
+      if (file.size > 10485760) { // 10MB
+        return { url: null, error: { message: 'File size too large. Please upload an image smaller than 10MB.' } }
+      }
+
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `product-images/${fileName}`
+
+      // Try to upload file to Supabase Storage
+      // Note: We'll skip bucket creation as it requires admin privileges
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError)
+        
+        // If bucket doesn't exist, provide helpful message
+        if (uploadError.message?.includes('Bucket not found')) {
+          return { 
+            url: null, 
+            error: { 
+              message: 'Storage bucket not found. Please create an "images" bucket in your Supabase dashboard under Storage.' 
+            } 
+          }
+        }
+
+        // If RLS policy error, provide helpful message
+        if (uploadError.message?.includes('row-level security') || uploadError.message?.includes('policy')) {
+          return { 
+            url: null, 
+            error: { 
+              message: 'Storage permissions error. Please check your Supabase storage policies or contact an administrator.' 
+            } 
+          }
+        }
+
+        return { url: null, error: uploadError }
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath)
+
+      return { url: data.publicUrl, error: null }
+    } catch (error) {
+      console.error('Error in uploadProductImage:', error)
+      return { url: null, error }
+    }
+  }
+
+  const deleteProductImage = async (imageUrl: string): Promise<{ error: any }> => {
+    try {
+      // Extract file path from URL
+      const url = new URL(imageUrl)
+      const pathSegments = url.pathname.split('/')
+      const filePath = pathSegments.slice(-2).join('/') // Get 'product-images/filename'
+
+      const { error } = await supabase.storage
+        .from('images')
+        .remove([filePath])
+
+      if (error) {
+        console.error('Error deleting image:', error)
+        return { error }
+      }
+
+      return { error: null }
+    } catch (error) {
+      console.error('Error in deleteProductImage:', error)
+      return { error }
+    }
+  }
+
   return {
     isAdmin,
     loading,
@@ -664,7 +751,10 @@ export function useAdmin() {
     getCategories,
     createCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    // Image upload
+    uploadProductImage,
+    deleteProductImage
   }
 }
 

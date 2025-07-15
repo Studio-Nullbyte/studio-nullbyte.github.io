@@ -4,8 +4,8 @@ import { motion } from 'framer-motion'
 import { 
   Package, 
   Plus, 
-  Edit3, 
-  Trash2, 
+  Edit3,
+  Trash2,
   Eye, 
   EyeOff,
   Search,
@@ -42,12 +42,20 @@ interface Product {
 }
 
 export default function AdminProducts() {
-  const { isAdmin, getProducts, getCategories, createProduct, updateProduct, deleteProduct } = useAdmin()
+  const { 
+    isAdmin, 
+    getProducts, 
+    getCategories, 
+    createProduct, 
+    updateProduct, 
+    deleteProduct,
+    uploadProductImage
+  } = useAdmin()
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [productsLoading, setProductsLoading] = useLoadingWithTimeout(true, 8000, 'AdminProducts data fetch')
+  const [productsLoading, setProductsLoading] = useLoadingWithTimeout(true, 8000)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [showActiveOnly, setShowActiveOnly] = useState(false)
@@ -56,6 +64,11 @@ export default function AdminProducts() {
   const [formLoading, setFormLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+
+  // Image upload state
+  const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>('url')
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [currentImageFile, setCurrentImageFile] = useState<File | null>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -135,6 +148,10 @@ export default function AdminProducts() {
     setIsFormOpen(false)
     setError('')
     setMessage('')
+    // Clear image-related state
+    setCurrentImageFile(null)
+    setImagePreview('')
+    setImageUploadMode('url')
   }
 
   const openCreateForm = () => {
@@ -157,6 +174,11 @@ export default function AdminProducts() {
     })
     setEditingProduct(product)
     setIsFormOpen(true)
+    // Clear any uploaded file since we're starting with existing URL
+    setCurrentImageFile(null)
+    setImagePreview('')
+    // Set mode based on whether there's an existing image URL
+    setImageUploadMode(product.image_url ? 'url' : 'url')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,12 +187,23 @@ export default function AdminProducts() {
     setError('')
 
     try {
+      // Handle image upload if file is selected
+      let imageUrl = formData.image_url.trim()
+      if (currentImageFile) {
+        const uploadedUrl = await handleImageUpload()
+        if (!uploadedUrl) {
+          setFormLoading(false)
+          return // Error is already set in handleImageUpload
+        }
+        imageUrl = uploadedUrl
+      }
+
       const productData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
         category_id: formData.category_id,
-        image_url: formData.image_url.trim() || null,
+        image_url: imageUrl || null,
         download_url: formData.download_url.trim() || null,
         preview_url: formData.preview_url.trim() || null,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
@@ -187,12 +220,19 @@ export default function AdminProducts() {
 
       if (result.error) {
         setError('Failed to save product')
+        console.error('❌ Failed to save product:', result.error)
       } else {
         setMessage(editingProduct ? 'Product updated successfully!' : 'Product created successfully!')
         
-        // Refresh products list
-        const updatedProducts = await getProducts()
-        setProducts(updatedProducts)
+        // Force refresh products list to ensure updated data
+        try {
+          const updatedProducts = await getProducts()
+          setProducts(updatedProducts)
+          // Also update filtered products immediately
+          setFilteredProducts(updatedProducts)
+        } catch (refreshError) {
+          // Error refreshing products
+        }
         
         setTimeout(() => {
           resetForm()
@@ -223,6 +263,66 @@ export default function AdminProducts() {
     } catch (error) {
       setError('An unexpected error occurred')
     }
+  }
+
+  // Image handling functions
+  const handleImageFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      setError('Image file must be smaller than 5MB')
+      return
+    }
+
+    setCurrentImageFile(file)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Clear any existing URL
+    setFormData(prev => ({ ...prev, image_url: '' }))
+  }
+
+  const handleImageUpload = async (): Promise<string | null> => {
+    if (!currentImageFile) return null
+
+    try {
+      const { url, error } = await uploadProductImage(currentImageFile)
+      if (error) {
+        setError('Failed to upload image: ' + (error.message || 'Unknown error'))
+        return null
+      }
+      return url
+    } catch (error) {
+      setError('Failed to upload image: ' + (error instanceof Error ? error.message : 'Unknown error'))
+      return null
+    }
+  }
+
+  const handleImageUrlChange = (url: string) => {
+    setFormData(prev => ({ ...prev, image_url: url }))
+    setImagePreview(url || null)
+    setCurrentImageFile(null)
+  }
+
+  const clearImage = () => {
+    setImagePreview(null)
+    setCurrentImageFile(null)
+    setFormData(prev => ({ ...prev, image_url: '' }))
   }
 
   if (productsLoading) {
@@ -361,7 +461,7 @@ export default function AdminProducts() {
                   <div className="aspect-video bg-code-gray relative">
                     {product.image_url ? (
                       <img
-                        src={product.image_url}
+                        src={`${product.image_url}${product.image_url.includes('?') ? '&' : '?'}t=${product.updated_at || Date.now()}`}
                         alt={product.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -584,18 +684,94 @@ export default function AdminProducts() {
                   </div>
                 </div>
 
-                {/* URLs */}
-                <div>
-                  <label className="block text-sm font-mono text-gray-300 mb-2">
-                    Image URL
+                {/* Image Upload Section */}
+                <div className="space-y-4">
+                  <label className="block text-sm font-mono text-gray-300">
+                    Product Image
                   </label>
-                  <input
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    className="w-full bg-code-gray border border-gray-600 px-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  
+                  {/* Image Upload Mode Toggle */}
+                  <div className="flex space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setImageUploadMode('upload')}
+                      className={`px-4 py-2 rounded font-mono text-sm transition-colors ${
+                        imageUploadMode === 'upload'
+                          ? 'bg-electric-violet text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Upload File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageUploadMode('url')}
+                      className={`px-4 py-2 rounded font-mono text-sm transition-colors ${
+                        imageUploadMode === 'url'
+                          ? 'bg-electric-violet text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      From URL
+                    </button>
+                  </div>
+
+                  {/* File Upload */}
+                  {imageUploadMode === 'upload' && (
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileSelect}
+                        className="block w-full text-gray-300 font-mono text-sm
+                                 file:mr-4 file:py-2 file:px-4
+                                 file:rounded file:border-0
+                                 file:bg-electric-violet file:text-white
+                                 file:font-mono file:text-sm
+                                 hover:file:bg-electric-violet-dark"
+                      />
+                      {error && error.includes('image') && (
+                        <p className="text-red-400 font-mono text-sm">{error}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* URL Input */}
+                  {imageUploadMode === 'url' && (
+                    <input
+                      type="url"
+                      value={formData.image_url}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, image_url: e.target.value }))
+                        handleImageUrlChange(e.target.value)
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full bg-code-gray border border-gray-600 px-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
+                    />
+                  )}
+
+                  {/* Image Preview */}
+                  {(imagePreview || formData.image_url) && (
+                    <div className="relative inline-block">
+                      <img
+                        src={imagePreview || formData.image_url}
+                        alt="Product preview"
+                        className="w-32 h-32 object-cover rounded border border-gray-600"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full
+                                 flex items-center justify-center hover:bg-red-600 font-mono text-sm"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -93,8 +93,6 @@ export function useAuth(): AuthState & AuthActions {
     // Get initial session
     const initializeAuth = async () => {
       try {
-        console.log('🔍 useAuth: Getting initial session...')
-        
         // Add timeout for session fetch
         const sessionPromise = supabase.auth.getSession()
         const timeoutPromise = new Promise((_, reject) => {
@@ -105,7 +103,7 @@ export function useAuth(): AuthState & AuthActions {
         const { data: { session }, error } = result as any
         
         if (error) {
-          console.warn('⚠️ useAuth: Session fetch error (continuing anyway):', error)
+          // Session fetch error (continuing anyway)
         }
         
         setSession(session)
