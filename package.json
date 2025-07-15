@@ -4,6 +4,7 @@
   "description": "Modular tools for the design-minded developer. Clean. Branded. Ready to deploy.",
   "private": true,
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@headlessui/react": "^1.7.0",
     "@stripe/stripe-js": "^7.4.0",
     "@supabase/supabase-js": "^2.50.5",

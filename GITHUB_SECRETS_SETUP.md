@@ -26,12 +26,27 @@ Click **"New repository secret"** and add each of these:
 - **Name**: `VITE_CRISP_WEBSITE_ID`
 - **Value**: `your-crisp-website-id` (from Crisp Dashboard after signup)
 
+#### Secret 5: VITE_EMAILJS_SERVICE_ID
+- **Name**: `VITE_EMAILJS_SERVICE_ID`
+- **Value**: `your-emailjs-service-id` (from EmailJS Dashboard)
+
+#### Secret 6: VITE_EMAILJS_TEMPLATE_ID
+- **Name**: `VITE_EMAILJS_TEMPLATE_ID`
+- **Value**: `your-emailjs-template-id` (from EmailJS Dashboard)
+
+#### Secret 7: VITE_EMAILJS_PUBLIC_KEY
+- **Name**: `VITE_EMAILJS_PUBLIC_KEY`
+- **Value**: `your-emailjs-public-key` (from EmailJS Dashboard)
+
 ### 3. Verify Setup
 After adding all secrets, you should see:
 - ✅ VITE_SUPABASE_URL
 - ✅ VITE_SUPABASE_ANON_KEY  
 - ✅ VITE_STRIPE_PUBLISHABLE_KEY
 - ✅ VITE_CRISP_WEBSITE_ID
+- ✅ VITE_EMAILJS_SERVICE_ID
+- ✅ VITE_EMAILJS_TEMPLATE_ID
+- ✅ VITE_EMAILJS_PUBLIC_KEY
 
 ### 4. Test the Build
 1. **Commit and push** any changes to trigger the GitHub Action

@@ -1,21 +1,68 @@
 import React, { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { CheckCircle, Home, ArrowRight } from 'lucide-react'
+import { CheckCircle, Home, ArrowRight, Mail, RefreshCw } from 'lucide-react'
+import { useOrderProcessing } from '../hooks/useOrderProcessing'
+import { useToast } from '../contexts/ToastContext'
 
 const Success: React.FC = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [loading, setLoading] = useState(true)
+  const [orderProcessed, setOrderProcessed] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const { processOrder, isProcessing } = useOrderProcessing()
+  const { showToast } = useToast()
 
   useEffect(() => {
-    // Simulate loading time for better UX
+    const handleOrderProcessing = async () => {
+      if (!sessionId || orderProcessed) return
+
+      try {
+        // Process the order and send emails
+        await processOrder({
+          stripeSessionId: sessionId,
+          // Additional customer data could be extracted from Stripe session if needed
+        })
+        
+        setOrderProcessed(true)
+        setEmailSent(true)
+      } catch (error) {
+        console.error('Order processing failed:', error)
+        setOrderProcessed(true)
+        setEmailSent(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    // Start processing after a brief delay for better UX
     const timer = setTimeout(() => {
-      setLoading(false)
+      if (sessionId) {
+        handleOrderProcessing()
+      } else {
+        setLoading(false)
+      }
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [sessionId, orderProcessed, processOrder])
+
+  const handleResendEmail = async () => {
+    if (!sessionId) return
+    
+    try {
+      // In a real implementation, you'd need the order ID
+      // For now, show a helpful message
+      showToast({
+        type: 'info',
+        title: 'Resend Email',
+        message: 'Please contact support to resend your download links.'
+      })
+    } catch (error) {
+      console.error('Failed to resend email:', error)
+    }
+  }
 
   if (loading) {
     return (
@@ -74,6 +121,34 @@ const Success: React.FC = () => {
                 <p className="font-mono text-electric-violet break-all">{sessionId}</p>
               </div>
             )}
+
+            {/* Email Status */}
+            <div className="bg-code-gray border border-gray-600 rounded-sm p-4 mb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-electric-violet" />
+                  <div className="text-left">
+                    <p className="text-sm font-mono text-white">Download Links</p>
+                    <p className="text-xs text-gray-400 font-mono">
+                      {emailSent ? 'Sent to your email address' : 'Processing...'}
+                    </p>
+                  </div>
+                </div>
+                {emailSent ? (
+                  <CheckCircle className="w-5 h-5 text-terminal-green" />
+                ) : isProcessing ? (
+                  <div className="w-4 h-4 border-2 border-electric-violet border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <button
+                    onClick={handleResendEmail}
+                    className="flex items-center gap-2 text-electric-violet hover:text-electric-violet-light font-mono text-sm transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Resend
+                  </button>
+                )}
+              </div>
+            </div>
 
             {/* Next Steps */}
             <div className="bg-code-gray-light border border-gray-600 rounded-sm p-6 mb-8 text-left">
