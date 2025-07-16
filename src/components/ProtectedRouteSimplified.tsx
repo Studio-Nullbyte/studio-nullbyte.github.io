@@ -1,6 +1,9 @@
+// SIMPLIFIED PROTECTED ROUTE
+// Replace your current ProtectedRoute with this simplified version
+
 import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuthContext } from '../contexts/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -13,7 +16,7 @@ export function ProtectedRoute({
   requireAuth = true, 
   requireAdmin = false 
 }: ProtectedRouteProps) {
-  const { user, isAdmin, loading } = useAuthContext()
+  const { user, isAdmin, loading } = useAuth()
   const location = useLocation()
 
   // Show loading while checking auth

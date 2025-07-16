@@ -15,7 +15,6 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
     password: '',
     confirmPassword: '',
     fullName: '',
-    rememberMe: false,
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -276,23 +275,6 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
               {errors.confirmPassword && (
                 <p className="text-red-400 text-xs font-mono mt-1">{errors.confirmPassword}</p>
               )}
-            </div>
-          )}
-
-          {/* Remember Me Checkbox - Login only */}
-          {mode === 'login' && (
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={formData.rememberMe}
-                onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
-                className="w-4 h-4 text-electric-violet bg-code-gray border-gray-600 rounded focus:ring-electric-violet focus:ring-2"
-                disabled={loading}
-              />
-              <label htmlFor="rememberMe" className="ml-2 text-sm font-mono text-gray-300">
-                Remember me
-              </label>
             </div>
           )}
 

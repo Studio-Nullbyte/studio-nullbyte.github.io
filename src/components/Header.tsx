@@ -3,10 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
-import { useAdminState } from '../hooks/useAdminState'
 import { useCart } from '../contexts/CartContext'
 import { useKeyboardNavigation } from '../utils/accessibility'
-import { emergencySignOut } from '../utils/emergencySignOut'
 import CartModal from './CartModal'
 
 const Header: React.FC = () => {
@@ -15,16 +13,19 @@ const Header: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
-  const { user, forceSignOut } = useAuthContext()
-  const { isAdmin, profile } = useAdminState()
+  const { user, isAdmin, signOut, profile } = useAuthContext()
   const { getTotalItems } = useCart()
 
   console.log('🎯 Header: Render state', {
     user: !!user,
-    profile: !!profile,
     isAdmin,
-    profileRole: profile?.role,
-    hasForceSignOut: typeof forceSignOut === 'function',
+    pathname: location.pathname,
+    timestamp: new Date().toISOString()
+  })
+  console.log('🎯 Header: Render state', {
+    user: !!user,
+    isAdmin,
+    pathname: location.pathname,
     timestamp: new Date().toISOString()
   })
 
@@ -34,8 +35,8 @@ const Header: React.FC = () => {
     setIsUserMenuOpen(false)
   })
 
-  const handleSignOut = () => {
-    console.log('🔴 Header: Sign out button clicked - using emergency sign out!')
+  const handleSignOut = async () => {
+    console.log('🔴 Header: Sign out button clicked')
     
     // Show confirmation
     const confirmSignOut = confirm('Are you sure you want to sign out?')
@@ -45,8 +46,8 @@ const Header: React.FC = () => {
       setIsUserMenuOpen(false)
       setIsMenuOpen(false)
       
-      // Use emergency sign out (this will reload the page)
-      emergencySignOut()
+      // Use the regular sign out function
+      await signOut()
     }
   }
 

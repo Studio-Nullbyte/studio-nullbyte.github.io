@@ -56,7 +56,7 @@ export default function Auth() {
       
       switch (mode) {
         case 'login':
-          result = await signIn(formData.email, formData.password, formData.rememberMe)
+          result = await signIn(formData.email, formData.password)
           
           if (!result.error) {
             const redirectTo = searchParams.get('redirect') || '/'

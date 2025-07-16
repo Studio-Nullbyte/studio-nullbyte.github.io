@@ -16,7 +16,7 @@ import {
 import { performAdminAuthCheck, forceRefreshAdminProfile, testAdminDataAccess } from '../utils/adminAuthCheck'
 import { runAdminTroubleshooting, quickFixAdminAccess, forceCreateAdminProfile } from '../utils/adminTroubleshooting'
 import { useAdmin } from '../hooks/useAdmin'
-import { useAdminState } from '../hooks/useAdminState'
+import { useAuthContext } from '../contexts/AuthContext'
 
 interface AdminDebugPanelProps {
   isOpen: boolean
@@ -25,7 +25,7 @@ interface AdminDebugPanelProps {
 
 export default function AdminDebugPanel({ isOpen, onClose }: AdminDebugPanelProps) {
   const { isAdmin: hookIsAdmin, loading: hookLoading } = useAdmin()
-  const { isAdmin: stateIsAdmin, loading: stateLoading } = useAdminState()
+  const { isAdmin: stateIsAdmin, loading: stateLoading } = useAuthContext()
   
   const [authResult, setAuthResult] = useState<any>(null)
   const [dataAccessResult, setDataAccessResult] = useState<any>(null)

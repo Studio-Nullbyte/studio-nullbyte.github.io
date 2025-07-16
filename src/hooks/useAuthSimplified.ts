@@ -1,3 +1,6 @@
+// SIMPLIFIED AUTHENTICATION SYSTEM
+// Replace your current useAuth hook with this simplified version
+
 import { useState, useEffect, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -17,7 +20,6 @@ interface AuthActions {
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
   updateProfile: (updates: any) => Promise<{ data: any; error: any }>
   updatePassword: (password: string) => Promise<{ data: any; error: AuthError | null }>
-  refreshProfile: () => Promise<void>
 }
 
 export function useAuth(): AuthState & AuthActions {
@@ -48,14 +50,6 @@ export function useAuth(): AuthState & AuthActions {
     }
   }, [])
 
-  // Refresh profile data
-  const refreshProfile = async () => {
-    if (user) {
-      const profileData = await fetchProfile(user.id)
-      setProfile(profileData)
-    }
-  }
-
   // Single auth state handler
   useEffect(() => {
     const initializeAuth = async () => {
@@ -84,7 +78,7 @@ export function useAuth(): AuthState & AuthActions {
     initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: string, session: Session | null) => {
+      async (event: string, session: Session | null) => {
         setSession(session)
         setUser(session?.user ?? null)
         
@@ -171,6 +165,5 @@ export function useAuth(): AuthState & AuthActions {
     resetPassword,
     updateProfile,
     updatePassword,
-    refreshProfile,
   }
 }
