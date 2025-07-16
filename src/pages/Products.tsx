@@ -231,8 +231,46 @@ const Products: React.FC = () => {
                 <div className="sr-only">Please wait while we load the products</div>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-12" role="status" aria-live="polite">
-                <div className="font-mono text-gray-300">No products found matching your criteria.</div>
+              <div className="text-center py-16" role="status" aria-live="polite">
+                <div className="max-w-md mx-auto">
+                  <div className="w-16 h-16 bg-electric-violet/20 rounded-lg flex items-center justify-center mx-auto mb-6">
+                    <Search className="w-8 h-8 text-electric-violet" />
+                  </div>
+                  <h2 className="text-2xl font-mono font-bold text-white mb-4">
+                    No products found
+                  </h2>
+                  <p className="text-gray-400 font-mono text-sm mb-6">
+                    {searchTerm && selectedCategory !== 'all' ? (
+                      <>We couldn't find any products matching "{searchTerm}" in the selected category.</>
+                    ) : searchTerm ? (
+                      <>We couldn't find any products matching "{searchTerm}".</>
+                    ) : selectedCategory !== 'all' ? (
+                      <>No products available in the selected category.</>
+                    ) : products.length === 0 ? (
+                      <>No products are currently available. Check back soon for new releases!</>
+                    ) : (
+                      <>No products found matching your criteria.</>
+                    )}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm('')}
+                        className="btn-secondary"
+                      >
+                        Clear search
+                      </button>
+                    )}
+                    {selectedCategory !== 'all' && (
+                      <button
+                        onClick={() => setSelectedCategory('all')}
+                        className="btn-secondary"
+                      >
+                        View all products
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="sr-only">
                   {searchTerm ? `No products found for search term "${searchTerm}"` : 'No products in selected category'}
                 </div>

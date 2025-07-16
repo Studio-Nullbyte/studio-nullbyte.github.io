@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { debugAdminState } from '../utils/adminDebug'
 
 interface AdminStats {
   totalUsers: number
@@ -152,6 +153,13 @@ export function useAdmin() {
   // Check if user is admin - wait for both auth and admin loading to complete
   useEffect(() => {
     const checkAdminStatus = () => {
+      debugAdminState('checkAdminStatus', {
+        authLoading,
+        user: !!user,
+        profile: profile,
+        profileRole: profile?.role
+      })
+
       // Don't make admin determination until auth is fully loaded
       if (authLoading) {
         return
@@ -166,19 +174,44 @@ export function useAdmin() {
         return
       }
       
+      // Wait for profile to be loaded before determining admin status
       if (profile) {
         const adminStatus = profile.role === 'admin'
+        debugAdminState('setting admin status', { adminStatus, role: profile.role })
         setIsAdmin(adminStatus)
         cacheAdminStatus(adminStatus)
-      } else {
+        setLoading(false)
+      } else if (profile === null) {
+        // Profile is explicitly null (user exists but no profile)
+        debugAdminState('no profile found', { user: !!user })
         setIsAdmin(false)
         cacheAdminStatus(false)
+        setLoading(false)
       }
-      setLoading(false)
+      // If profile is undefined, keep loading until we get a definitive result
     }
 
     checkAdminStatus()
   }, [profile, authLoading, user])
+
+  // Add listener for auth state changes to refresh admin status
+  useEffect(() => {
+    const handleAuthStateChange = () => {
+      // When auth state changes, clear cache and re-check admin status
+      localStorage.removeItem(ADMIN_CACHE_KEY)
+      localStorage.removeItem(ADMIN_CACHE_EXPIRY)
+      
+      if (!user) {
+        setIsAdmin(false)
+        setLoading(false)
+      }
+    }
+
+    // Listen for session changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
+    
+    return () => subscription.unsubscribe()
+  }, [user])
 
   // Admin Statistics
   const getAdminStats = async (): Promise<AdminStats> => {

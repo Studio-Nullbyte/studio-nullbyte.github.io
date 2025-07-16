@@ -70,6 +70,7 @@ export function useAuth(): AuthState & AuthActions {
     }
   }
 
+  // Listen for auth changes
   useEffect(() => {
     // Get initial session
     const initializeAuth = async () => {
@@ -105,11 +106,13 @@ export function useAuth(): AuthState & AuthActions {
 
     initializeAuth()
 
-    // Listen for auth changes
+    // Listen for auth state changes with improved error handling
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
+        console.log('🔄 Auth state changed:', event, !!session)
+        
         setSession(session)
         setUser(session?.user ?? null)
         
@@ -118,6 +121,9 @@ export function useAuth(): AuthState & AuthActions {
           setProfile(profileData)
         } else {
           setProfile(null)
+          // Clear any cached admin status when user logs out
+          localStorage.removeItem('studio_nullbyte_admin_status')
+          localStorage.removeItem('studio_nullbyte_admin_expiry')
         }
         
         setLoading(false)
