@@ -319,38 +319,6 @@ const Contact: React.FC = () => {
             </div>
           </div>
         </section>
-
-        {/* Terminal CTA */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-code-gray rounded-sm overflow-hidden">
-                <div className="terminal-header">
-                  <div className="terminal-dot bg-red-500"></div>
-                  <div className="terminal-dot bg-yellow-500"></div>
-                  <div className="terminal-dot bg-green-500"></div>
-                  <span className="text-gray-400 text-sm font-mono ml-4">contact@studio-nullbyte</span>
-                </div>
-                <div className="p-6">
-                  <div className="font-mono text-sm space-y-2">
-                    <div className="text-terminal-green">
-                      <span className="terminal-prompt">echo "Ready to start your project?"</span>
-                    </div>
-                    <div className="text-white">
-                      Ready to start your project?
-                    </div>
-                    <div className="text-terminal-green">
-                      <span className="terminal-prompt">contact studionullbyte@gmail.com</span>
-                    </div>
-                    <div className="text-electric-violet cursor-blink">
-                      _
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
     </>
   )

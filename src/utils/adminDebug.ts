@@ -41,6 +41,21 @@ export const getAdminCacheInfo = () => {
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).adminDebug = {
     clearCache: clearAdminCache,
-    getCacheInfo: getAdminCacheInfo
+    getCacheInfo: getAdminCacheInfo,
+    testState: () => {
+      console.log('🧪 Testing admin state...')
+      
+      // Check localStorage
+      const adminStatus = localStorage.getItem('studio_nullbyte_admin_status')
+      const adminExpiry = localStorage.getItem('studio_nullbyte_admin_expiry')
+      
+      console.log('📦 Admin cache:', {
+        status: adminStatus,
+        expiry: adminExpiry ? new Date(parseInt(adminExpiry)) : null,
+        isExpired: adminExpiry ? Date.now() > parseInt(adminExpiry) : true
+      })
+      
+      return getAdminCacheInfo()
+    }
   }
 }

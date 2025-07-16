@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
+import { useAdminState } from '../hooks/useAdminState'
 import { useCart } from '../contexts/CartContext'
 import { useKeyboardNavigation } from '../utils/accessibility'
 import CartModal from './CartModal'
@@ -12,12 +13,19 @@ const Header: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
-  const userMenuRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, profile, signOut } = useAuthContext()
+  const { user, signOut } = useAuthContext()
+  const { isAdmin, profile } = useAdminState()
   const { getTotalItems } = useCart()
+
+  console.log('🎯 Header: Render state', {
+    user: !!user,
+    profile: !!profile,
+    isAdmin,
+    profileRole: profile?.role,
+    timestamp: new Date().toISOString()
+  })
 
   // Close mobile menu with Escape key
   useKeyboardNavigation(() => {
@@ -123,7 +131,7 @@ const Header: React.FC = () => {
             ))}
             
             {/* Admin Link in Main Navigation */}
-            {profile?.role === 'admin' && (
+            {isAdmin && (
               <Link
                 to="/admin"
                 className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${
@@ -191,7 +199,7 @@ const Header: React.FC = () => {
                         </Link>
                         
                         {/* Admin Menu Items */}
-                        {profile?.role === 'admin' && (
+                        {isAdmin && (
                           <>
                             <hr className="border-gray-700 my-1" />
                             <div className="px-4 py-2">
@@ -308,7 +316,7 @@ const Header: React.FC = () => {
                 ))}
                 
                 {/* Admin Link in Mobile Main Navigation */}
-                {profile?.role === 'admin' && (
+                {isAdmin && (
                   <Link
                     to="/admin"
                     className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${
@@ -335,7 +343,7 @@ const Header: React.FC = () => {
                     </Link>
                     
                     {/* Mobile Admin Menu Items */}
-                    {profile?.role === 'admin' && (
+                    {isAdmin && (
                       <>
                         <hr className="border-gray-700 my-2" />
                         <div className="py-2">
