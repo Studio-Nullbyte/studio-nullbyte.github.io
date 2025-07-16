@@ -48,10 +48,7 @@
 - `src/utils/adminTroubleshooting.ts` - Admin troubleshooting utilities
 - `src/utils/sessionHealth.ts` - Session health monitoring
 - `src/utils/emergencySignOut.ts` - Emergency sign out utilities
-- `src/utils/debugSignOut.ts` - Debug sign out utilities
 - `src/utils/testAdminState.ts` - Test admin state utilities
-- `debug-signout.html` - Debug HTML file
-- `test-signout.html` - Test HTML file
 - All temporary simplified files created during implementation
 
 ## 📊 **Impact**

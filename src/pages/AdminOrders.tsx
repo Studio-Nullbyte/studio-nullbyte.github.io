@@ -21,7 +21,6 @@ import {
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate, Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
-import { checkDatabaseTables } from '../utils/dbChecker'
 
 interface Order {
   id: string
@@ -176,29 +175,6 @@ export default function AdminOrders() {
     setIsEditModalOpen(true)
   }
 
-  const handleRunDiagnostics = async () => {
-    console.log('Running database diagnostics...')
-    setError('')
-    
-    try {
-      const results = await checkDatabaseTables()
-      console.log('Database check results:', results)
-      
-      const missingTables = Object.entries(results)
-        .filter(([_, exists]) => !exists)
-        .map(([table]) => table)
-      
-      if (missingTables.length > 0) {
-        setError(`Missing or inaccessible tables: ${missingTables.join(', ')}. Please check your database setup.`)
-      } else {
-        setMessage('All database tables are accessible!')
-        setTimeout(() => setMessage(''), 3000)
-      }
-    } catch (error) {
-      setError(`Diagnostics failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }
-
   const handleUpdateOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormLoading(true)
@@ -295,13 +271,6 @@ export default function AdminOrders() {
                   <ShoppingCart className="w-6 h-6 text-electric-violet" />
                   <h1 className="text-3xl font-mono text-white">Manage Orders</h1>
                 </div>
-                <button
-                  onClick={handleRunDiagnostics}
-                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-mono text-sm transition-colors"
-                >
-                  <Package className="w-4 h-4" />
-                  Run Diagnostics
-                </button>
               </div>
               <p className="text-gray-400 font-mono">
                 View and manage customer orders and transactions

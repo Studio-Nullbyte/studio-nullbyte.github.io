@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import './index.css'
 import { initializeSecurityValidation } from './utils/security'
-import './utils/debugSignOut'
 
 // Initialize security validation on app startup
 initializeSecurityValidation()
