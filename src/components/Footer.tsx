@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Github, Twitter, Mail } from 'lucide-react'
+import { Github, Mail } from 'lucide-react'
 
 const Footer: React.FC = () => {
   return (
@@ -32,14 +32,6 @@ const Footer: React.FC = () => {
                 className="text-gray-400 hover:text-electric-violet transition-colors"
               >
                 <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="https://twitter.com/studionullbyte"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-electric-violet transition-colors"
-              >
-                <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="mailto:studionullbyte@gmail.com"
