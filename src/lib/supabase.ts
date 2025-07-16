@@ -4,19 +4,52 @@ import type { Database } from './types/database'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
+// Create a fallback client if environment variables are missing
+let supabase: any
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
+  console.warn('⚠️ Missing Supabase environment variables. Authentication will be disabled.')
+  
+  // Create a mock client for development
+  supabase = {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      signUp: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      signOut: () => Promise.resolve({ error: null }),
+      resetPasswordForEmail: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      updateUser: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    },
+    from: () => {
+      // Create a mock query chain
+      const mockQuery = {
+        select: () => mockQuery,
+        eq: () => mockQuery,
+        order: () => mockQuery,
+        limit: () => mockQuery,
+        single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+        insert: () => mockQuery,
+        update: () => mockQuery,
+        delete: () => mockQuery,
+        then: () => Promise.resolve({ data: [], error: null }) // For when used as a promise
+      }
+      return mockQuery
+    }
+  }
+} else {
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      // Disable debug logging to reduce console noise
+      debug: false
+    }
+  })
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    // Disable debug logging to reduce console noise
-    debug: false
-  }
-})
+export { supabase }
 
 // Test Supabase connection
 supabase.auth.getSession()
@@ -59,23 +92,62 @@ export const getCurrentUser = async () => {
 
 // Database helpers
 export const getProducts = async (category?: string) => {
-  let query = supabase
-    .from('products')
-    .select(`
-      *,
-      categories!inner(name),
-      downloads:download_history(count),
-      reviews(rating)
-    `)
-    .eq('active', true)
-    .order('created_at', { ascending: false })
-
-  if (category && category !== 'all') {
-    query = query.eq('categories.slug', category)
+  // Check if Supabase is properly configured
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('⚠️ Supabase not configured. Returning empty products.')
+    return { data: [], error: null }
   }
 
-  const { data, error } = await query
-  return { data, error }
+  try {
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        categories!inner(name),
+        downloads:download_history(count),
+        reviews(rating)
+      `)
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+
+    if (category && category !== 'all') {
+      query = query.eq('categories.slug', category)
+    }
+
+    const { data, error } = await query
+    return { data, error }
+  } catch (err) {
+    console.error('Error in getProducts:', err)
+    return { data: [], error: err }
+  }
+}
+
+export const getFeaturedProducts = async (limit = 3) => {
+  // Check if Supabase is properly configured
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('⚠️ Supabase not configured. Returning empty featured products.')
+    return { data: [], error: null }
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories(name, slug),
+        downloads:download_history(count),
+        reviews(rating)
+      `)
+      .eq('active', true)
+      .eq('featured', true)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    return { data, error }
+  } catch (err) {
+    console.error('Error in getFeaturedProducts:', err)
+    return { data: [], error: err }
+  }
 }
 
 export const getProduct = async (id: string) => {

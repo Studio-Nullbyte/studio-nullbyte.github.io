@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
@@ -37,27 +37,17 @@ export function useAuth(): AuthState & AuthActions {
   }, [loading])
 
   // Fetch user profile from database with retry and better error handling
-  const fetchProfile = async (userId: string, retryCount = 0): Promise<any | null> => {
+  const fetchProfile = useCallback(async (userId: string): Promise<any | null> => {
     try {
-      // Increase timeout for profile fetch to reduce random failures
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000) // Increased from 5s to 10s
-      })
-      
-      // Race the profile fetch against the timeout
-      const result = await Promise.race([
-        supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single(),
-        timeoutPromise
-      ])
-      
-      const { data, error } = result as any
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
       
       if (error) {
         if (error.code === 'PGRST116') {
+          // No profile found, return null
           return null
         }
         throw error
@@ -65,21 +55,12 @@ export function useAuth(): AuthState & AuthActions {
       
       return data
     } catch (error) {
-      // Retry up to 2 times on failure (but not on timeout for very slow connections)
-      if (retryCount < 2 && error instanceof Error && !error.message.includes('timeout')) {
-        await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds before retry
-        return fetchProfile(userId, retryCount + 1)
-      }
+      console.warn('⚠️ useAuth: Profile fetch failed:', error)
       
-      // For timeouts, try one more time with a longer delay
-      if (retryCount === 0 && error instanceof Error && error.message.includes('timeout')) {
-        await new Promise(resolve => setTimeout(resolve, 3000)) // Wait 3 seconds
-        return fetchProfile(userId, retryCount + 1)
-      }
-      
+      // Return null instead of retrying to avoid infinite loops
       return null
     }
-  }
+  }, [supabase])
 
   // Refresh profile data
   const refreshProfile = async () => {
@@ -93,17 +74,11 @@ export function useAuth(): AuthState & AuthActions {
     // Get initial session
     const initializeAuth = async () => {
       try {
-        // Add timeout for session fetch
-        const sessionPromise = supabase.auth.getSession()
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Session fetch timeout')), 8000)
-        })
-        
-        const result = await Promise.race([sessionPromise, timeoutPromise])
-        const { data: { session }, error } = result as any
+        // Get session without timeout to avoid timeout errors
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          // Session fetch error (continuing anyway)
+          console.warn('⚠️ useAuth: Session fetch error, continuing without session:', error)
         }
         
         setSession(session)
@@ -121,34 +96,19 @@ export function useAuth(): AuthState & AuthActions {
         console.error('❌ useAuth: Error during auth initialization:', error)
         // Ensure loading is set to false even if there's an error
         setLoading(false)
+        // Set default values in case of error
+        setSession(null)
+        setUser(null)
+        setProfile(null)
       }
     }
 
     initializeAuth()
 
-    // Handle session cleanup based on remember me preference
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      const rememberMe = localStorage.getItem('rememberMe') === 'true'
-      const tempSession = sessionStorage.getItem('tempSession') === 'true'
-      
-      if (!rememberMe && tempSession) {
-        // Clear the session if remember me was not checked
-        supabase.auth.signOut()
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [])
-
-  // Listen for auth changes
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
       try {
         setSession(session)
         setUser(session?.user ?? null)
@@ -169,6 +129,25 @@ export function useAuth(): AuthState & AuthActions {
     })
 
     return () => subscription.unsubscribe()
+  }, [fetchProfile])
+
+  // Handle session cleanup based on remember me preference
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true'
+      const tempSession = sessionStorage.getItem('tempSession') === 'true'
+      
+      if (!rememberMe && tempSession) {
+        // Clear the session if remember me was not checked
+        supabase.auth.signOut()
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
   }, [])
 
   // Auth actions

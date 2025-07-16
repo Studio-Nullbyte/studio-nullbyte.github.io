@@ -1,11 +1,39 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Code, Palette, Zap, Users, Download, Contact } from 'lucide-react'
+import { ArrowRight, Code, Palette, Zap, Users, Download, Contact, Loader2 } from 'lucide-react'
 import SEO from '../components/SEO'
-import { generateWebsiteSchema, generateOrganizationSchema } from '../utils/structuredData'
+import { getFeaturedProducts } from '../lib/supabase'
+import type { Product } from '../lib/types/database'
 
 const Home: React.FC = () => {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoading(true)
+        const { data, error } = await getFeaturedProducts(3)
+        
+        if (error) {
+          console.error('Error fetching featured products:', error)
+          setError('Failed to load featured products')
+        } else if (data) {
+          setFeaturedProducts(data)
+        }
+      } catch (err) {
+        console.error('Error fetching featured products:', err)
+        setError('Failed to load featured products')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedProducts()
+  }, [])
+
   const features = [
     {
       icon: <Code className="w-8 h-8" aria-hidden="true" />,
@@ -34,33 +62,6 @@ const Home: React.FC = () => {
     { value: "10k+", label: "Downloads" },
     { value: "4.9/5", label: "Rating" },
     { value: "24/7", label: "Support" }
-  ]
-
-  const featuredProducts = [
-    {
-      id: 1,
-      title: "Developer Portfolio Kit",
-      category: "Web Template",
-      price: "$49",
-      image: "/api/placeholder/400/300",
-      tags: ["React", "TypeScript", "Tailwind"]
-    },
-    {
-      id: 2,
-      title: "AI Prompt Engineering Library",
-      category: "AI Prompts",
-      price: "$29",
-      image: "/api/placeholder/400/300",
-      tags: ["ChatGPT", "Claude", "Midjourney"]
-    },
-    {
-      id: 3,
-      title: "Notion Productivity System",
-      category: "Notion Template",
-      price: "$19",
-      image: "/api/placeholder/400/300",
-      tags: ["Productivity", "GTD", "Projects"]
-    }
   ]
 
   const structuredData = JSON.stringify({
@@ -215,83 +216,111 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section 
-        className="py-12 sm:py-16 lg:py-20 bg-code-gray"
-        aria-labelledby="featured-products-heading"
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 
-              id="featured-products-heading"
-              className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
-            >
-              Featured <span className="text-electric-violet">Products</span>
-            </h2>
-            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
-              Handpicked templates and tools to accelerate your next project.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-            {featuredProducts.map((product, index) => (
-              <motion.article
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="card group"
+      {/* Featured Products - Only show if there are products or if loading/error */}
+      {(loading || error || featuredProducts.length > 0) && (
+        <section 
+          className="py-12 sm:py-16 lg:py-20 bg-code-gray"
+          aria-labelledby="featured-products-heading"
+        >
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 
+                id="featured-products-heading"
+                className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
               >
-                <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={`${product.title} preview`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs text-electric-violet font-mono">
-                    {product.category}
-                  </span>
-                  <span className="text-lg sm:text-xl font-mono font-bold text-electric-violet">
-                    {product.price}
-                  </span>
-                </div>
-                <h3 className="text-base sm:text-lg font-mono font-bold mb-2">
-                  {product.title}
-                </h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {product.tags.map((tag, tagIndex) => (
-                    <span
-                      key={tagIndex}
-                      className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <Link
-                  to={`/product/${product.id}`}
-                  className="btn-primary w-full text-center text-sm sm:text-base"
-                >
-                  View Details
-                </Link>
-              </motion.article>
-            ))}
-          </div>
+                Featured <span className="text-electric-violet">Products</span>
+              </h2>
+              <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
+                Handpicked templates and tools to accelerate your next project.
+              </p>
+            </div>
 
-          <div className="text-center mt-8 sm:mt-12">
-            <Link 
-              to="/products" 
-              className="btn-secondary inline-flex items-center"
-              aria-label="View all products in our catalog"
-            >
-              View All Products
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" aria-hidden="true" />
-            </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+              {loading ? (
+                // Loading state
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-electric-violet" />
+                  <span className="ml-3 text-gray-400">Loading featured products...</span>
+                </div>
+              ) : error ? (
+                // Error state
+                <div className="col-span-full text-center py-12">
+                  <p className="text-red-400 mb-4">{error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="btn-secondary"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : (
+                // Products loaded successfully
+                featuredProducts.map((product, index) => (
+                  <motion.article
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="card group"
+                  >
+                    <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
+                      <img
+                        src={product.image_url || "/api/placeholder/400/300"}
+                        alt={`${product.title} preview`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/api/placeholder/400/300";
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs text-electric-violet font-mono">
+                        {(product as any).categories?.name || 'Product'}
+                      </span>
+                      <span className="text-lg sm:text-xl font-mono font-bold text-electric-violet">
+                        ${product.price}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-mono font-bold mb-2">
+                      {product.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {product.tags.map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="btn-primary w-full text-center text-sm sm:text-base"
+                    >
+                      View Details
+                    </Link>
+                  </motion.article>
+                ))
+              )}
+            </div>
+
+            {featuredProducts.length > 0 && (
+              <div className="text-center mt-8 sm:mt-12">
+                <Link 
+                  to="/products" 
+                  className="btn-secondary inline-flex items-center"
+                  aria-label="View all products in our catalog"
+                >
+                  View All Products
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" aria-hidden="true" />
+                </Link>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section 

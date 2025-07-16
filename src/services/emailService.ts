@@ -37,7 +37,6 @@ class EmailService {
     try {
       emailjs.init(EMAILJS_PUBLIC_KEY)
       this.initialized = true
-      console.log('EmailJS initialized successfully')
     } catch (error) {
       console.error('EmailJS initialization failed:', error)
     }

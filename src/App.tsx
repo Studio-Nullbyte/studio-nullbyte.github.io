@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
@@ -33,26 +33,13 @@ import AccessibilityChecker from './components/AccessibilityChecker'
 
 const App: React.FC = () => {
   const location = useLocation()
-  const [isLoading, setIsLoading] = useState(true)
 
   useScrollToTop()
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2500)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   const pageTransition = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 }
-  }
-
-  if (isLoading) {
-    return null // Loading screen handled in index.html
   }
 
   return (

@@ -3,7 +3,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import './styles/accessibility.css';
 
 @layer base {
   * {

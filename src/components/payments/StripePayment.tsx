@@ -5,12 +5,6 @@ import { loadStripe } from '@stripe/stripe-js'
 // Get the publishable key
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 
-// Debug: Log the key to see if it's loaded
-console.log('Environment variables:', {
-  STRIPE_PUBLISHABLE_KEY,
-  allEnvVars: import.meta.env
-})
-
 // Initialize Stripe
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null
 
