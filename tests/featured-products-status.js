@@ -28,7 +28,7 @@ console.log('   📊 Table: products (with featured, active columns)')
 console.log('   📊 Table: categories (joined for category names)')
 console.log('   🏷️  Required: products.featured = true AND products.active = true')
 
-// Check 4: Troubleshooting Steps
+// Check 4: Troubleshooting
 console.log('\n4. Troubleshooting Steps:')
 console.log('   1. Copy .env.example to .env and fill in values')
 console.log('   2. Run sample-featured-products.sql in Supabase')

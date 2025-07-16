@@ -2,7 +2,7 @@
 // Navigate to your app and open Developer Tools (F12)
 // Paste this code in the console and press Enter
 
-import { testSupabaseConnection, checkSupabaseStatus } from './src/utils/supabaseDiagnostics'
+import { testSupabaseConnection, checkSupabaseStatus } from '../src/utils/supabaseDiagnostics'
 
 // Run diagnostics
 console.log('🚀 Running Supabase Diagnostics...')
