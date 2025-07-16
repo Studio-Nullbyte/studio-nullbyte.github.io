@@ -1,5 +1,5 @@
 // PayPal configuration
-export const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || 'AYCjIMV9QoUyaOVsRjY9S6sJkZcQZxPUZjY_ZCCwLqLgOAcNlZGNCAqZzRSDYjS0qVWKwfJdJJJMJJJJ'
+export const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || ''
 
 // PayPal API endpoints
 export const PAYPAL_API_BASE = import.meta.env.VITE_PAYPAL_API_BASE || 'https://api.sandbox.paypal.com'
@@ -7,6 +7,11 @@ export const PAYPAL_API_BASE = import.meta.env.VITE_PAYPAL_API_BASE || 'https://
 // Return and Cancel URLs (can be overridden with environment variables)
 export const PAYPAL_RETURN_URL = import.meta.env.VITE_PAYPAL_RETURN_URL || `${window.location.origin}/success`
 export const PAYPAL_CANCEL_URL = import.meta.env.VITE_PAYPAL_CANCEL_URL || `${window.location.origin}/cancel`
+
+// Validate PayPal configuration
+if (!PAYPAL_CLIENT_ID) {
+  console.error('VITE_PAYPAL_CLIENT_ID is required for PayPal integration')
+}
 
 export const PAYPAL_OPTIONS = {
   clientId: PAYPAL_CLIENT_ID,

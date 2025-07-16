@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { logger } from '../utils/logger'
+import { authRateLimit, generateRateLimitIdentifier, isRateLimitError } from '../utils/rateLimit'
+
 
 interface AuthState {
   user: User | null
@@ -109,7 +112,7 @@ export function useAuth(): AuthState & AuthActions {
     // Listen for auth state changes with improved error handling
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
       try {
         console.log('🔄 Auth state changed:', event, !!session)
         
@@ -167,6 +170,16 @@ export function useAuth(): AuthState & AuthActions {
 
   const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
+      // Rate limit sign in attempts
+      const rateLimitIdentifier = generateRateLimitIdentifier()
+      const rateLimitResult = authRateLimit.isAllowed(`signin:${rateLimitIdentifier}`)
+      
+      if (!rateLimitResult.allowed) {
+        const error = new Error('Too many login attempts. Please try again later.') as AuthError
+        error.status = 429
+        return { data: null, error }
+      }
+      
       const result = await supabase.auth.signInWithPassword({ email, password })
       
       // After successful sign in, store the remember me preference
@@ -182,6 +195,14 @@ export function useAuth(): AuthState & AuthActions {
       
       return result
     } catch (error) {
+      // Log error details for debugging
+      logger.error('SignIn Error', { email, error })
+      
+      // Check if it's a rate limit error
+      if (isRateLimitError(error)) {
+        return { data: null, error: new Error('Too many login attempts. Please try again later.') }
+      }
+      
       return { data: null, error: error as AuthError }
     }
   }
