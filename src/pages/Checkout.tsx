@@ -453,6 +453,7 @@ const Checkout: React.FC = () => {
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     disabled={!isFormValid()}
+                    customerInfo={customerInfo}
                   />
                 )}
                 

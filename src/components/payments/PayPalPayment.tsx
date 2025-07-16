@@ -1,40 +1,143 @@
 import React, { useState } from 'react'
-import { Lock } from 'lucide-react'
+import { PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer } from '@paypal/react-paypal-js'
+import { Lock, AlertCircle } from 'lucide-react'
+import { PAYPAL_OPTIONS, PAYPAL_STYLES, PAYPAL_RETURN_URL, PAYPAL_CANCEL_URL, type PayPalOrderData } from '../../lib/paypal'
 
 interface PayPalPaymentProps {
   amount: number
   onSuccess: (paymentId: string) => void
   onError: (error: string) => void
   disabled?: boolean
+  customerInfo?: {
+    firstName: string
+    lastName: string
+    email: string
+    address: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
 }
 
 const PayPalPayment: React.FC<PayPalPaymentProps> = ({
   amount,
   onSuccess,
   onError,
-  disabled = false
+  disabled = false,
+  customerInfo
 }) => {
   const [isProcessing, setIsProcessing] = useState(false)
+  const [paypalError, setPaypalError] = useState<string | null>(null)
 
-  const handlePayPalCheckout = async () => {
-    setIsProcessing(true)
+  // PayPal Button Component
+  const PayPalButtonComponent = () => {
+    const [{ isPending, isRejected }] = usePayPalScriptReducer()
 
-    try {
-      // Simulate PayPal SDK integration
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Simulate PayPal payment success (95% success rate)
-      if (Math.random() > 0.05) {
-        const paymentId = `PAYPAL-${Math.random().toString(36).substr(2, 12).toUpperCase()}`
-        onSuccess(paymentId)
-      } else {
-        onError('PayPal payment was cancelled or failed. Please try again.')
+    const createOrder = async (): Promise<string> => {
+      try {
+        setIsProcessing(true)
+        setPaypalError(null)
+
+        const orderData: PayPalOrderData = {
+          intent: 'CAPTURE',
+          purchase_units: [
+            {
+              reference_id: `ORDER_${Date.now()}`,
+              amount: {
+                currency_code: 'USD',
+                value: amount.toFixed(2)
+              },
+              description: 'Studio Nullbyte Digital Products',
+              custom_id: `customer_${customerInfo?.email || 'guest'}`,
+              soft_descriptor: 'STUDIO_NULLBYTE'
+            }
+          ],
+          application_context: {
+            brand_name: 'Studio Nullbyte',
+            locale: 'en_US',
+            landing_page: 'BILLING',
+            shipping_preference: 'NO_SHIPPING',
+            user_action: 'PAY_NOW',
+            return_url: PAYPAL_RETURN_URL,
+            cancel_url: PAYPAL_CANCEL_URL
+          }
+        }
+
+        // In a real implementation, you would send this to your backend
+        // For now, we'll simulate order creation
+        const orderId = `ORDER_${Math.random().toString(36).substr(2, 12).toUpperCase()}`
+        
+        console.log('Created PayPal order:', orderId, orderData)
+        return orderId
+      } catch (error) {
+        console.error('Error creating PayPal order:', error)
+        setPaypalError('Failed to create PayPal order. Please try again.')
+        throw error
       }
-    } catch (error) {
-      onError('PayPal payment processing failed. Please try again.')
-    } finally {
-      setIsProcessing(false)
     }
+
+    const onApprove = async (data: any) => {
+      try {
+        setIsProcessing(true)
+        console.log('PayPal payment approved:', data)
+        
+        // In a real implementation, you would capture the payment on your backend
+        // For now, we'll simulate successful payment
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        onSuccess(data.orderID)
+      } catch (error) {
+        console.error('Error capturing PayPal payment:', error)
+        onError('Payment capture failed. Please contact support.')
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+
+    const onCancel = (data: any) => {
+      console.log('PayPal payment cancelled:', data)
+      setIsProcessing(false)
+      onError('Payment was cancelled. Please try again.')
+    }
+
+    const onErrorHandler = (error: any) => {
+      console.error('PayPal payment error:', error)
+      setIsProcessing(false)
+      setPaypalError('PayPal payment failed. Please try again.')
+      onError('PayPal payment failed. Please try again.')
+    }
+
+    if (isPending || isProcessing) {
+      return (
+        <div className="w-full bg-gray-700 rounded-sm p-4 flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-electric-violet border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-2 text-sm font-mono">Loading PayPal...</span>
+        </div>
+      )
+    }
+
+    if (isRejected) {
+      return (
+        <div className="w-full bg-red-900 bg-opacity-30 border border-red-500 rounded-sm p-4">
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-mono">PayPal failed to load. Please refresh the page.</span>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <PayPalButtons
+        style={PAYPAL_STYLES}
+        disabled={disabled}
+        createOrder={createOrder}
+        onApprove={onApprove}
+        onCancel={onCancel}
+        onError={onErrorHandler}
+      />
+    )
   }
 
   return (
@@ -56,8 +159,8 @@ const PayPalPayment: React.FC<PayPalPaymentProps> = ({
               Secure PayPal Payment
             </div>
             <div className="text-sm text-gray-300">
-              You'll be redirected to PayPal to complete your payment securely.
               You can pay with your PayPal balance, bank account, or credit card.
+              No PayPal account required.
             </div>
           </div>
         </div>
@@ -80,23 +183,18 @@ const PayPalPayment: React.FC<PayPalPaymentProps> = ({
         </div>
       </div>
 
-      <button
-        onClick={handlePayPalCheckout}
-        disabled={disabled || isProcessing}
-        className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-mono font-bold py-3 px-4 rounded-sm transition-colors flex items-center justify-center gap-2"
-      >
-        {isProcessing ? (
-          <>
-            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-            Redirecting to PayPal...
-          </>
-        ) : (
-          <>
-            <Lock className="w-4 h-4" />
-            Pay with PayPal
-          </>
-        )}
-      </button>
+      {paypalError && (
+        <div className="bg-red-900 bg-opacity-30 border border-red-500 rounded-sm p-3">
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-mono">{paypalError}</span>
+          </div>
+        </div>
+      )}
+
+      <PayPalScriptProvider options={PAYPAL_OPTIONS}>
+        <PayPalButtonComponent />
+      </PayPalScriptProvider>
 
       <div className="text-xs text-gray-400 text-center">
         <Lock className="w-3 h-3 inline mr-1" />
