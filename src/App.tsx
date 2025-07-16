@@ -26,6 +26,8 @@ import AdminUsers from './pages/AdminUsers'
 import AdminOrders from './pages/AdminOrders'
 import AdminCategories from './pages/AdminCategories'
 import AdminContacts from './pages/AdminContacts'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import { useScrollToTop } from './hooks/useScrollToTop'
 import AccessibilityChecker from './components/AccessibilityChecker'
 
@@ -79,6 +81,8 @@ const App: React.FC = () => {
               <Route path="/cancel" element={<Cancel />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
               
               {/* Authentication Routes */}
               <Route 
