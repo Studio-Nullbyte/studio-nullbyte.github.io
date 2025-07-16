@@ -4,6 +4,7 @@
  */
 import React from 'react'
 import { supabase } from '../lib/supabase'
+import { logger } from './logger'
 
 interface SessionHealth {
   isHealthy: boolean
@@ -125,7 +126,7 @@ class SessionHealthMonitor {
       try {
         listener(this.health)
       } catch (error) {
-        console.error('❌ SessionHealthMonitor: Listener error:', error)
+        logger.error('SessionHealthMonitor: Listener error:', error)
       }
     })
   }

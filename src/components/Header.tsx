@@ -6,6 +6,7 @@ import { useAuthContext } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useKeyboardNavigation } from '../utils/accessibility'
 import CartModal from './CartModal'
+import { logger } from '../utils/logger'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -16,19 +17,6 @@ const Header: React.FC = () => {
   const { user, isAdmin, signOut, profile } = useAuthContext()
   const { getTotalItems } = useCart()
 
-  console.log('🎯 Header: Render state', {
-    user: !!user,
-    isAdmin,
-    pathname: location.pathname,
-    timestamp: new Date().toISOString()
-  })
-  console.log('🎯 Header: Render state', {
-    user: !!user,
-    isAdmin,
-    pathname: location.pathname,
-    timestamp: new Date().toISOString()
-  })
-
   // Close mobile menu with Escape key
   useKeyboardNavigation(() => {
     setIsMenuOpen(false)
@@ -36,16 +24,14 @@ const Header: React.FC = () => {
   })
 
   const handleSignOut = async () => {
-    console.log('🔴 Header: Sign out button clicked')
-    
     // Show confirmation
     const confirmSignOut = confirm('Are you sure you want to sign out?')
-    
+
     if (confirmSignOut) {
       // Close menus first
       setIsUserMenuOpen(false)
       setIsMenuOpen(false)
-      
+
       // Use the regular sign out function
       await signOut()
     }

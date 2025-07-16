@@ -150,13 +150,6 @@ export function logSecurityValidation(): void {
       warnings: configValidation.warnings
     });
   }
-
-  if (envValidation.isValid && configValidation.isValid) {
-    logger.info('Security validation passed', {
-      environmentValid: true,
-      configurationValid: true
-    });
-  }
 }
 
 /**

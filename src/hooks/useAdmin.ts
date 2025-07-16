@@ -153,12 +153,12 @@ export function useAdmin() {
   // Check if user is admin - wait for both auth and admin loading to complete
   useEffect(() => {
     const checkAdminStatus = () => {
-      debugAdminState('checkAdminStatus', {
-        authLoading,
-        user: !!user,
-        profile: profile,
-        profileRole: profile?.role
-      })
+    //   debugAdminState('checkAdminStatus', {
+    //     authLoading,
+    //     user: !!user,
+    //     profile: profile,
+    //     profileRole: profile?.role
+    //   })
 
       // Don't make admin determination until auth is fully loaded
       if (authLoading) {
@@ -177,13 +177,13 @@ export function useAdmin() {
       // Wait for profile to be loaded before determining admin status
       if (profile) {
         const adminStatus = profile.role === 'admin'
-        debugAdminState('setting admin status', { adminStatus, role: profile.role })
+        //debugAdminState('setting admin status', { adminStatus, role: profile.role })
         setIsAdmin(adminStatus)
         cacheAdminStatus(adminStatus)
         setLoading(false)
       } else if (profile === null) {
         // Profile is explicitly null (user exists but no profile)
-        debugAdminState('no profile found', { user: !!user })
+        //debugAdminState('no profile found', { user: !!user })
         setIsAdmin(false)
         cacheAdminStatus(false)
         setLoading(false)

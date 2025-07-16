@@ -25,16 +25,35 @@ export const logger = {
   },
   
   error: (message: string, ...args: any[]) => {
-    if (isDevelopment) {
-      console.error(`❌ [ERROR] ${message}`, ...args)
-    }
-    // In production, you might want to send errors to a logging service
+    // Always log errors, even in production (for critical issues)
+    console.error(`❌ [ERROR] ${message}`, ...args)
   },
   
   // Security-focused logging - never logs in production
   security: (message: string, ...args: any[]) => {
     if (isDevelopment) {
       console.log(`🔒 [SECURITY] ${message}`, ...args)
+    }
+  },
+
+  // Admin-specific logging
+  admin: (message: string, ...args: any[]) => {
+    if (isDevelopment) {
+      console.log(`👑 [ADMIN] ${message}`, ...args)
+    }
+  },
+
+  // Database-related logging
+  db: (message: string, ...args: any[]) => {
+    if (isDevelopment) {
+      console.log(`🗄️ [DB] ${message}`, ...args)
+    }
+  },
+
+  // Auth-related logging
+  auth: (message: string, ...args: any[]) => {
+    if (isDevelopment) {
+      console.log(`� [AUTH] ${message}`, ...args)
     }
   }
 }

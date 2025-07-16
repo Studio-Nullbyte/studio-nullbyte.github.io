@@ -21,6 +21,7 @@ import {
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate, Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { logger } from '../utils/logger'
 
 interface Order {
   id: string
@@ -96,16 +97,16 @@ export default function AdminOrders() {
     const fetchOrders = async () => {
       if (isAdmin) {
         try {
-          console.log('AdminOrders: Starting to fetch orders...')
+          logger.admin('Starting to fetch orders...')
           const ordersData = await getOrders()
-          console.log('AdminOrders: Orders fetched successfully:', ordersData)
+          logger.admin('Orders fetched successfully:', ordersData)
           setOrders(ordersData)
           setError('') // Clear any previous errors
         } catch (error) {
-          console.error('AdminOrders: Failed to load orders:', error)
+          logger.error('Failed to load orders:', error)
           setError(`Failed to load orders: ${error instanceof Error ? error.message : 'Unknown error'}`)
         } finally {
-          console.log('AdminOrders: Setting ordersLoading to false')
+          logger.debug('Setting ordersLoading to false')
           setOrdersLoading(false)
         }
       } else {
@@ -116,7 +117,7 @@ export default function AdminOrders() {
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (ordersLoading) {
-        console.warn('AdminOrders: Timeout reached, forcing loading to false')
+        logger.warn('Timeout reached, forcing loading to false')
         setOrdersLoading(false)
         setError('Request timed out. Please try refreshing the page.')
       }

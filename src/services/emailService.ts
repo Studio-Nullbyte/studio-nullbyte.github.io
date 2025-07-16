@@ -1,4 +1,5 @@
 import emailjs from '@emailjs/browser'
+import { logger } from '../utils/logger'
 
 // EmailJS configuration
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
@@ -76,10 +77,10 @@ class EmailService {
         templateParams
       )
 
-      console.log('Order confirmation email sent:', response)
+      logger.info('Order confirmation email sent:', response)
       return response.status === 200
     } catch (error) {
-      console.error('Failed to send order confirmation email:', error)
+      logger.error('Failed to send order confirmation email:', error)
       return false
     }
   }
@@ -114,10 +115,10 @@ class EmailService {
         templateParams
       )
 
-      console.log('Contact form email sent:', response)
+      logger.info('Contact form email sent:', response)
       return response.status === 200
     } catch (error) {
-      console.error('Failed to send contact form email:', error)
+      logger.error('Failed to send contact form email:', error)
       return false
     }
   }

@@ -2,9 +2,10 @@
  * Emergency sign out utility
  * This provides a simple way to sign out when the normal flow fails
  */
+import { logger } from './logger'
 
 export function emergencySignOut() {
-  console.log('🚨 Emergency sign out initiated...')
+  logger.auth('Emergency sign out initiated...')
   
   try {
     // Clear all possible authentication storage
@@ -21,7 +22,7 @@ export function emergencySignOut() {
         localStorage.removeItem(key)
         sessionStorage.removeItem(key)
       } catch (error) {
-        console.warn(`Failed to remove ${key}:`, error)
+        logger.warn(`Failed to remove ${key}:`, error)
       }
     })
     
@@ -32,7 +33,7 @@ export function emergencySignOut() {
         try {
           localStorage.removeItem(key)
         } catch (error) {
-          console.warn(`Failed to remove local storage key ${key}:`, error)
+          logger.warn(`Failed to remove local storage key ${key}:`, error)
         }
       }
     })
@@ -44,18 +45,18 @@ export function emergencySignOut() {
         try {
           sessionStorage.removeItem(key)
         } catch (error) {
-          console.warn(`Failed to remove session storage key ${key}:`, error)
+          logger.warn(`Failed to remove session storage key ${key}:`, error)
         }
       }
     })
     
-    console.log('🚨 Emergency sign out completed - reloading page...')
+    logger.auth('Emergency sign out completed - reloading page...')
     
     // Force reload the page to reset all state
     window.location.href = window.location.origin
     
   } catch (error) {
-    console.error('🚨 Emergency sign out failed:', error)
+    logger.error('Emergency sign out failed:', error)
     
     // Last resort - just reload the page
     window.location.reload()

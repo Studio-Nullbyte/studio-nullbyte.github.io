@@ -24,15 +24,17 @@
  * check the console logs to see where the state is being lost.
  */
 
+import { logger } from './logger'
+
 // Test function to verify admin state
 export const testAdminState = () => {
-  console.log('🧪 Testing admin state...')
+  logger.admin('Testing admin state...')
   
   // Check localStorage
   const adminStatus = localStorage.getItem('studio_nullbyte_admin_status')
   const adminExpiry = localStorage.getItem('studio_nullbyte_admin_expiry')
   
-  console.log('📦 Admin cache:', {
+  logger.admin('Admin cache:', {
     status: adminStatus,
     expiry: adminExpiry ? new Date(parseInt(adminExpiry)) : null,
     isExpired: adminExpiry ? Date.now() > parseInt(adminExpiry) : true

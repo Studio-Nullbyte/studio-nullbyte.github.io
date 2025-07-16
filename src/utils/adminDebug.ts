@@ -1,10 +1,11 @@
 /**
  * Debug utility to help track admin state issues
  */
+import { logger } from './logger'
 
 export const debugAdminState = (context: string, data: any) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔍 Admin Debug [${context}]:`, {
+    logger.admin(`Debug [${context}]:`, {
       timestamp: new Date().toISOString(),
       ...data
     })
@@ -15,9 +16,9 @@ export const clearAdminCache = () => {
   try {
     localStorage.removeItem('studio_nullbyte_admin_status')
     localStorage.removeItem('studio_nullbyte_admin_expiry')
-    console.log('🧹 Admin cache cleared')
+    logger.admin('Admin cache cleared')
   } catch (error) {
-    console.warn('⚠️ Failed to clear admin cache:', error)
+    logger.warn('Failed to clear admin cache:', error)
   }
 }
 
@@ -32,7 +33,7 @@ export const getAdminCacheInfo = () => {
       isExpired: expiry ? Date.now() > parseInt(expiry) : true
     }
   } catch (error) {
-    console.warn('⚠️ Failed to get admin cache info:', error)
+    logger.warn('Failed to get admin cache info:', error)
     return { status: null, expiry: null, isExpired: true }
   }
 }
@@ -43,13 +44,13 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     clearCache: clearAdminCache,
     getCacheInfo: getAdminCacheInfo,
     testState: () => {
-      console.log('🧪 Testing admin state...')
+      logger.admin('Testing admin state...')
       
       // Check localStorage
       const adminStatus = localStorage.getItem('studio_nullbyte_admin_status')
       const adminExpiry = localStorage.getItem('studio_nullbyte_admin_expiry')
       
-      console.log('📦 Admin cache:', {
+      logger.admin('Admin cache:', {
         status: adminStatus,
         expiry: adminExpiry ? new Date(parseInt(adminExpiry)) : null,
         isExpired: adminExpiry ? Date.now() > parseInt(adminExpiry) : true

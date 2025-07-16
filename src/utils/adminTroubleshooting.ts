@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../lib/supabase'
+import { logger } from './logger'
 
 export interface AdminTroubleshootingResult {
   userId: string | null
@@ -89,7 +90,7 @@ export async function runAdminTroubleshooting(): Promise<AdminTroubleshootingRes
         recommendations.push('Run the SQL fix script to create the debug function')
       } else {
         rlsEnabled = true
-        console.log('RLS debug data:', debugData)
+        logger.admin('RLS debug data:', debugData)
       }
     } catch (error) {
       errors.push(`Debug function not available: ${error}`)

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { logger } from './logger'
 
 export const checkDatabaseTables = async () => {
   const results = {
@@ -28,12 +29,12 @@ export const checkDatabaseTables = async () => {
 
       if (!error) {
         results[table as keyof typeof results] = true
-        console.log(`✅ Table '${table}' exists and is accessible`)
+        logger.db(`Table '${table}' exists and is accessible`)
       } else {
-        console.error(`❌ Table '${table}' error:`, error.message)
+        logger.error(`Table '${table}' error:`, error.message)
       }
     } catch (err) {
-      console.error(`❌ Table '${table}' check failed:`, err)
+      logger.error(`Table '${table}' check failed:`, err)
     }
   }
 
@@ -58,14 +59,14 @@ export const createMockOrder = async () => {
       .select()
 
     if (error) {
-      console.error('❌ Could not create mock order:', error.message)
+      logger.error('Could not create mock order:', error.message)
       return null
     }
 
-    console.log('✅ Mock order created successfully:', data)
+    logger.db('Mock order created successfully:', data)
     return data[0]
   } catch (err) {
-    console.error('❌ Mock order creation failed:', err)
+    logger.error('Mock order creation failed:', err)
     return null
   }
 }

@@ -1,22 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types/database'
+import { logger } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-console.log('🔧 Supabase Configuration Check:', {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseAnonKey,
-  urlLength: supabaseUrl.length,
-  keyLength: supabaseAnonKey.length
-})
+
 
 // Create a fallback client if environment variables are missing
 let supabase: any
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Missing Supabase environment variables. Authentication will be disabled.')
-  console.warn('⚠️ Expected variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
+  logger.warn('⚠️ Missing Supabase environment variables. Authentication will be disabled.')
+  logger.warn('⚠️ Expected variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
   
   // Create a mock client for development
   supabase = {
@@ -125,7 +121,7 @@ export const getProducts = async (category?: string) => {
     const { data, error } = await query
     return { data, error }
   } catch (err) {
-    console.error('Error in getProducts:', err)
+    logger.error('Error in getProducts:', err)
     return { data: [], error: err }
   }
 }
@@ -133,7 +129,7 @@ export const getProducts = async (category?: string) => {
 export const getFeaturedProducts = async (limit = 3) => {
   // Check if Supabase is properly configured
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('⚠️ Supabase not configured. Returning empty featured products.')
+    logger.warn('⚠️ Supabase not configured. Returning empty featured products.')
     return { data: [], error: null }
   }
 
@@ -153,7 +149,7 @@ export const getFeaturedProducts = async (limit = 3) => {
 
     return { data, error }
   } catch (err) {
-    console.error('Error in getFeaturedProducts:', err)
+    logger.error('Error in getFeaturedProducts:', err)
     return { data: [], error: err }
   }
 }

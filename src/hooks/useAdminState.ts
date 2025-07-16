@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthContext } from '../contexts/AuthContext'
+import { logger } from '../utils/logger'
 
 /**
  * Hook specifically for managing admin state persistence
@@ -11,7 +12,7 @@ export function useAdminState() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🔑 useAdminState: Auth state changed', {
+    logger.admin('useAdminState: Auth state changed', {
       user: !!user,
       profile: !!profile,
       profileRole: profile?.role,
