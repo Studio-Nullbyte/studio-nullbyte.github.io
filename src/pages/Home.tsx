@@ -8,22 +8,22 @@ import { generateWebsiteSchema, generateOrganizationSchema } from '../utils/stru
 const Home: React.FC = () => {
   const features = [
     {
-      icon: <Code className="w-8 h-8" />,
+      icon: <Code className="w-8 h-8" aria-hidden="true" />,
       title: "Developer-First",
       description: "Built for those who think in syntax and ship in silence."
     },
     {
-      icon: <Palette className="w-8 h-8" />,
+      icon: <Palette className="w-8 h-8" aria-hidden="true" />,
       title: "Design-Minded",
       description: "Aesthetic precision meets functional excellence."
     },
     {
-      icon: <Zap className="w-8 h-8" />,
+      icon: <Zap className="w-8 h-8" aria-hidden="true" />,
       title: "Ready to Deploy",
       description: "Plug-and-play solutions that work out of the box."
     },
     {
-      icon: <Users className="w-8 h-8" />,
+      icon: <Users className="w-8 h-8" aria-hidden="true" />,
       title: "Community Driven",
       description: "Built by developers, for developers and creators."
     }
@@ -91,9 +91,18 @@ const Home: React.FC = () => {
         structuredData={structuredData}
       />
 
+      {/* Skip Link */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6">
-        <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+      <section 
+        id="main-content"
+        className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6" 
+        aria-labelledby="hero-heading"
+      >
+        <div className="absolute inset-0 bg-grid-pattern opacity-10" aria-hidden="true" />
         <div className="container mx-auto text-center relative z-10 max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -101,7 +110,10 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-mono font-bold mb-4 sm:mb-6 leading-tight">
+            <h1 
+              id="hero-heading"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-mono font-bold mb-4 sm:mb-6 leading-tight"
+            >
               Modular tools for the
               <span className="block text-electric-violet cursor-blink mt-2">
                 design-minded developer
@@ -111,10 +123,17 @@ const Home: React.FC = () => {
               Clean. Branded. Ready to deploy.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-              <Link to="/products" className="btn-primary inline-flex items-center justify-center">
+              <Link 
+                to="/products" 
+                className="btn-primary inline-flex items-center justify-center"
+                aria-describedby="browse-description"
+              >
                 Browse Templates
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" aria-hidden="true" />
               </Link>
+              <span id="browse-description" className="sr-only">
+                Explore our collection of developer tools and templates
+              </span>
               <Link to="/about" className="btn-secondary">
                 Learn More
               </Link>
@@ -124,8 +143,12 @@ const Home: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-code-gray">
+      <section 
+        className="py-12 sm:py-16 lg:py-20 bg-code-gray"
+        aria-labelledby="stats-heading"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 id="stats-heading" className="sr-only">Company Statistics</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {stats.map((stat, index) => (
               <motion.div
@@ -135,7 +158,10 @@ const Home: React.FC = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-electric-violet mb-2">
+                <div 
+                  className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-electric-violet mb-2"
+                  aria-label={`${stat.value} ${stat.label}`}
+                >
                   {stat.value}
                 </div>
                 <div className="text-gray-400 font-mono text-xs sm:text-sm">
@@ -148,10 +174,16 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section 
+        className="py-12 sm:py-16 lg:py-20"
+        aria-labelledby="features-heading"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4">
+            <h2 
+              id="features-heading"
+              className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
+            >
               Built for <span className="text-electric-violet">Creators</span>
             </h2>
             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
@@ -184,10 +216,16 @@ const Home: React.FC = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-code-gray">
+      <section 
+        className="py-12 sm:py-16 lg:py-20 bg-code-gray"
+        aria-labelledby="featured-products-heading"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4">
+            <h2 
+              id="featured-products-heading"
+              className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
+            >
               Featured <span className="text-electric-violet">Products</span>
             </h2>
             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
@@ -197,7 +235,7 @@ const Home: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
             {featuredProducts.map((product, index) => (
-              <motion.div
+              <motion.article
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -207,7 +245,7 @@ const Home: React.FC = () => {
                 <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
                   <img
                     src={product.image}
-                    alt={product.title}
+                    alt={`${product.title} preview`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
                 </div>
@@ -238,36 +276,57 @@ const Home: React.FC = () => {
                 >
                   View Details
                 </Link>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
 
           <div className="text-center mt-8 sm:mt-12">
-            <Link to="/products" className="btn-secondary inline-flex items-center">
+            <Link 
+              to="/products" 
+              className="btn-secondary inline-flex items-center"
+              aria-label="View all products in our catalog"
+            >
               View All Products
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" aria-hidden="true" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section 
+        className="py-20"
+        aria-labelledby="cta-heading"
+      >
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-mono font-bold mb-4">
+            <h2 
+              id="cta-heading"
+              className="text-3xl md:text-4xl font-mono font-bold mb-4"
+            >
               Ready to <span className="text-electric-violet">Ship</span>?
             </h2>
             <p className="text-gray-400 text-lg mb-8">
               Join thousands of developers who trust Studio Nullbyte for their projects.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/products" className="btn-primary flex">
-                <Download className="w-5 h-5 mr-2" />
+              <Link 
+                to="/products" 
+                className="btn-primary flex"
+                aria-describedby="get-started-description"
+              >
+                <Download className="w-5 h-5 mr-2" aria-hidden="true" />
                 Get Started
               </Link>
-              <Link to="/contact" className="btn-secondary flex">
-                <Contact className="w-5 h-5 mr-2" />
+              <span id="get-started-description" className="sr-only">
+                Browse our product catalog to find the perfect template for your project
+              </span>
+              <Link 
+                to="/contact" 
+                className="btn-secondary flex"
+                aria-label="Contact us for support or custom solutions"
+              >
+                <Contact className="w-5 h-5 mr-2" aria-hidden="true" />
                 Contact Us
               </Link>
             </div>

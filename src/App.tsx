@@ -27,6 +27,7 @@ import AdminOrders from './pages/AdminOrders'
 import AdminCategories from './pages/AdminCategories'
 import AdminContacts from './pages/AdminContacts'
 import { useScrollToTop } from './hooks/useScrollToTop'
+import AccessibilityChecker from './components/AccessibilityChecker'
 
 const App: React.FC = () => {
   const location = useLocation()
@@ -156,6 +157,9 @@ const App: React.FC = () => {
         
         {/* Live Chat Widget */}
         <CrispChat />
+        
+        {/* Accessibility Checker (Development Only) */}
+        <AccessibilityChecker />
       </div>
         </ToastProvider>
       </CartProvider>

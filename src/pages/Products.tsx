@@ -141,14 +141,24 @@ const Products: React.FC = () => {
       />
 
       <div className="min-h-screen pt-16 sm:pt-20">
+        {/* Skip Link for Keyboard Navigation */}
+        <a 
+          href="#main-content" 
+          className="skip-link"
+          onFocus={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          onBlur={(e) => e.currentTarget.style.transform = 'translateY(-100%)'}
+        >
+          Skip to main content
+        </a>
+
         {/* Header */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-code-gray">
+        <section className="py-12 sm:py-16 lg:py-20 bg-code-gray" role="banner">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-mono font-bold mb-4">
                 Browse <span className="text-electric-violet">Products</span>
               </h1>
-              <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-4">
+              <p className="text-gray-300 text-base sm:text-lg max-w-2xl mx-auto px-4">
                 Handcrafted templates and tools to accelerate your next project.
               </p>
             </div>
@@ -157,131 +167,185 @@ const Products: React.FC = () => {
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-col gap-4 mb-6 sm:mb-8">
                 <div className="relative">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <label htmlFor="product-search" className="sr-only">
+                    Search products by name, description, or tags
+                  </label>
+                  <Search 
+                    className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                    aria-hidden="true"
+                  />
                   <input
+                    id="product-search"
                     type="text"
                     placeholder="Search products..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-black border border-gray-700 rounded-sm focus:border-electric-violet focus:outline-none font-mono text-sm sm:text-base"
+                    className="input-field pl-10"
+                    aria-describedby="search-description"
                   />
+                  <div id="search-description" className="sr-only">
+                    Search through {products.length} products by name, description, or tags
+                  </div>
                 </div>
                 <div className="flex items-center justify-center sm:justify-start space-x-2">
-                  <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                  <span className="text-xs sm:text-sm text-gray-400 font-mono">Filter by category</span>
+                  <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" aria-hidden="true" />
+                  <span className="text-xs sm:text-sm text-gray-300 font-mono">Filter by category</span>
                 </div>
               </div>
 
               {/* Category Filters */}
-              <div className="flex flex-wrap gap-2 mb-6 sm:mb-8 justify-center sm:justify-start">
-                {categoriesWithCounts.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-3 py-2 sm:px-4 rounded-sm font-mono text-xs sm:text-sm transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-electric-violet text-black'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    {category.name} ({category.count})
-                  </button>
-                ))}
-              </div>
+              <fieldset className="mb-6 sm:mb-8">
+                <legend className="sr-only">Filter products by category</legend>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start" role="group">
+                  {categoriesWithCounts.map(category => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`px-3 py-2 sm:px-4 rounded-sm font-mono text-xs sm:text-sm transition-colors ${
+                        selectedCategory === category.id
+                          ? 'bg-electric-violet text-black'
+                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      }`}
+                      aria-pressed={selectedCategory === category.id}
+                      aria-describedby={`category-${category.id}-count`}
+                    >
+                      {category.name}
+                      <span id={`category-${category.id}-count`} className="sr-only">
+                        {category.count} products
+                      </span>
+                      <span aria-hidden="true"> ({category.count})</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
             </div>
           </div>
         </section>
 
         {/* Products Grid */}
-        <section className="py-12 sm:py-16 lg:py-20">
+        <main id="main-content" className="py-12 sm:py-16 lg:py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
-              <div className="text-center py-12">
-                <div className="font-mono text-gray-400">Loading products...</div>
+              <div className="text-center py-12" role="status" aria-live="polite">
+                <div className="font-mono text-gray-300">Loading products...</div>
+                <div className="sr-only">Please wait while we load the products</div>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="font-mono text-gray-400">No products found matching your criteria.</div>
+              <div className="text-center py-12" role="status" aria-live="polite">
+                <div className="font-mono text-gray-300">No products found matching your criteria.</div>
+                <div className="sr-only">
+                  {searchTerm ? `No products found for search term "${searchTerm}"` : 'No products in selected category'}
+                </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {filteredProducts.map((product, index) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="card group relative"
-                  >
-                    {product.featured && (
-                      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-electric-violet text-black px-2 py-1 rounded-sm text-xs font-mono font-bold z-10">
-                        FEATURED
-                      </div>
-                    )}
-                    
-                    <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
-                      {product.image_url ? (
-                        <img
-                          src={`${product.image_url}?t=${product.updated_at || Date.now()}`}
-                          alt={product.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-500">
-                          <span className="font-mono text-sm">No Image</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs text-electric-violet font-mono uppercase">
-                        {product.category?.name || 'Uncategorized'}
-                      </span>
-                      <span className="text-lg sm:text-xl font-mono font-bold text-electric-violet">
-                        ${product.price}
-                      </span>
-                    </div>
-                  
-                  <h3 className="text-base sm:text-lg font-mono font-bold mb-2 group-hover:text-electric-violet transition-colors">
-                    {product.title}
-                  </h3>
-                  
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                    {product.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {product.tags.slice(0, 3).map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
+              <>
+                <div className="sr-only" aria-live="polite" aria-atomic="true">
+                  Showing {filteredProducts.length} of {products.length} products
+                  {selectedCategory !== 'all' && ` in ${categoriesWithCounts.find(c => c.id === selectedCategory)?.name}`}
+                  {searchTerm && ` matching "${searchTerm}"`}
+                </div>
+                <div 
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+                  role="region"
+                  aria-label="Product listings"
+                >
+                  {filteredProducts.map((product, index) => (
+                    <article
+                      key={product.id}
+                      className="card group relative"
+                      aria-labelledby={`product-title-${product.id}`}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
-                        {tag}
-                      </span>
-                    ))}
-                    {product.tags.length > 3 && (
-                      <span className="text-xs text-gray-400">
-                        +{product.tags.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                  
-                  <button 
-                    className="btn-primary w-full"
-                    onClick={() => handleViewDetails(product.id)}
-                  >
-                    View Details
-                  </button>
-                </motion.div>
-              ))}
-            </div>
+                        {product.featured && (
+                          <div 
+                            className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-electric-violet text-black px-2 py-1 rounded-sm text-xs font-mono font-bold z-10"
+                            aria-label="Featured product"
+                          >
+                            FEATURED
+                          </div>
+                        )}
+                        
+                        <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
+                          {product.image_url ? (
+                            <img
+                              src={`${product.image_url}?t=${product.updated_at || Date.now()}`}
+                              alt={`Preview image for ${product.title}`}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                                target.nextElementSibling?.classList.remove('hidden')
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full flex items-center justify-center text-gray-500 ${product.image_url ? 'hidden' : ''}`}>
+                            <span className="font-mono text-sm">No preview available</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-xs text-electric-violet font-mono uppercase">
+                            {product.category?.name || 'Uncategorized'}
+                          </span>
+                          <span 
+                            className="text-lg sm:text-xl font-mono font-bold text-electric-violet"
+                            aria-label={`Price: $${product.price}`}
+                          >
+                            ${product.price}
+                          </span>
+                        </div>
+                      
+                        <h3 
+                          id={`product-title-${product.id}`}
+                          className="text-base sm:text-lg font-mono font-bold mb-2 group-hover:text-electric-violet transition-colors"
+                        >
+                          {product.title}
+                        </h3>
+                        
+                        <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                          {product.description}
+                        </p>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4" role="list" aria-label="Product tags">
+                          {product.tags.slice(0, 3).map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
+                              role="listitem"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {product.tags.length > 3 && (
+                            <span className="text-xs text-gray-400" aria-label={`${product.tags.length - 3} additional tags`}>
+                              +{product.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                        
+                        <button 
+                          className="btn-primary w-full"
+                          onClick={() => handleViewDetails(product.id)}
+                          aria-describedby={`product-description-${product.id}`}
+                        >
+                          View Details
+                          <span className="sr-only"> for {product.title}</span>
+                        </button>
+                        <div id={`product-description-${product.id}`} className="sr-only">
+                          {product.description}
+                        </div>
+                      </motion.div>
+                    </article>
+                  ))}
+                </div>
+              </>
             )}
           </div>
-        </section>
+        </main>
       </div>
     </>
   )

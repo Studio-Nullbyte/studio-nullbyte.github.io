@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
+import { useKeyboardNavigation } from '../utils/accessibility'
 import CartModal from './CartModal'
 
 const Header: React.FC = () => {
@@ -11,10 +12,18 @@ const Header: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuthContext()
   const { getTotalItems } = useCart()
+
+  // Close mobile menu with Escape key
+  useKeyboardNavigation(() => {
+    setIsMenuOpen(false)
+    setIsUserMenuOpen(false)
+  })
 
   const handleSignOut = async () => {
     try {
@@ -73,16 +82,22 @@ const Header: React.FC = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-black/90 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'
       }`}
+      role="banner"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
+          <Link 
+            to="/" 
+            className="nav-link flex items-center space-x-2 sm:space-x-3 group"
+            aria-label="Studio Nullbyte - Home"
+          >
             <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
               <img 
                 src="/images/SNLogo.jpg" 
-                alt="Studio Nullbyte Logo" 
+                alt="" 
                 className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-300"
+                role="presentation"
               />
             </div>
             <span className="font-mono text-lg sm:text-xl font-bold glitch-text group-hover:text-electric-violet transition-colors">
@@ -91,16 +106,17 @@ const Header: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8" role="navigation" aria-label="Main navigation">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`font-mono text-sm transition-colors hover:text-electric-violet ${
+                className={`nav-link font-mono text-sm transition-colors hover:text-electric-violet ${
                   location.pathname === item.path
                     ? 'text-electric-violet'
                     : 'text-gray-300'
                 }`}
+                aria-current={location.pathname === item.path ? 'page' : undefined}
               >
                 {item.name}
               </Link>
@@ -126,11 +142,15 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2 hover:bg-gray-800 rounded-sm transition-colors"
+              className="nav-link relative p-2 hover:bg-gray-800 rounded-sm transition-colors"
+              aria-label={`Shopping cart - ${getTotalItems()} items`}
             >
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               {getTotalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-electric-violet text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span 
+                  className="absolute -top-1 -right-1 bg-electric-violet text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                  aria-label={`${getTotalItems()} items in cart`}
+                >
                   {getTotalItems()}
                 </span>
               )}
@@ -248,9 +268,15 @@ const Header: React.FC = () => {
             
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 hover:bg-gray-800 rounded-sm transition-colors"
+              className="mobile-menu-button lg:hidden"
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {isMenuOpen ? 
+                <X className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" /> : 
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+              }
             </button>
           </div>
         </div>

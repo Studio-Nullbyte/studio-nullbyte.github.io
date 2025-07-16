@@ -6,22 +6,22 @@ import SEO from '../components/SEO'
 const About: React.FC = () => {
   const values = [
     {
-      icon: <Code className="w-8 h-8" />,
+      icon: <Code className="w-8 h-8" aria-hidden="true" />,
       title: "Developer-First",
       description: "Built by developers, for developers. We understand the tools you need."
     },
     {
-      icon: <Target className="w-8 h-8" />,
+      icon: <Target className="w-8 h-8" aria-hidden="true" />,
       title: "Quality Focus",
       description: "Every template is carefully crafted with attention to detail and best practices."
     },
     {
-      icon: <Zap className="w-8 h-8" />,
+      icon: <Zap className="w-8 h-8" aria-hidden="true" />,
       title: "Performance",
       description: "Fast, efficient, and optimized for modern web standards."
     },
     {
-      icon: <Users className="w-8 h-8" />,
+      icon: <Users className="w-8 h-8" aria-hidden="true" />,
       title: "Community",
       description: "Building tools that bring the developer community together."
     }
@@ -78,12 +78,22 @@ const About: React.FC = () => {
         structuredData={structuredData}
       />
 
+      {/* Skip Link */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Hero Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-code-gray">
+        <section 
+          id="main-content"
+          className="py-12 sm:py-16 lg:py-20 bg-code-gray"
+          aria-labelledby="about-heading"
+        >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
               <motion.h1
+                id="about-heading"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-3xl sm:text-4xl lg:text-5xl font-mono font-bold mb-4 sm:mb-6"

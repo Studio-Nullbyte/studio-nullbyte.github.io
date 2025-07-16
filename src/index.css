@@ -3,6 +3,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './styles/accessibility.css';
 
 @layer base {
   * {
@@ -21,20 +22,143 @@
 }
 
 @layer components {
+  /* WCAG AA Compliant Button Styles */
   .btn-primary {
-    @apply bg-electric-violet hover:bg-electric-violet-light text-white font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-electric-violet focus:ring-offset-2 focus:ring-offset-black;
+    @apply bg-electric-violet hover:bg-electric-violet-light text-white font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300 transform hover:scale-105;
+    /* WCAG AA Focus indicators */
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+    /* Ensure minimum touch target size 44x44px */
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .btn-secondary {
-    @apply border border-electric-violet text-electric-violet hover:bg-electric-violet hover:text-black font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-electric-violet focus:ring-offset-2 focus:ring-offset-black;
+    @apply border-2 border-electric-violet text-electric-violet hover:bg-electric-violet hover:text-black font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300 transform hover:scale-105;
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .btn-ghost {
-    @apply text-white hover:text-electric-violet font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-electric-violet focus:ring-offset-2 focus:ring-offset-black;
+    @apply text-white hover:text-electric-violet font-medium py-3 px-4 sm:px-6 text-sm sm:text-base rounded-sm transition-all duration-300;
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+    min-height: 44px;
+    min-width: 44px;
   }
   
+  /* WCAG AA Compliant Card Styles */
   .card {
     @apply bg-code-gray border border-gray-800 rounded-sm p-4 sm:p-6 hover:border-electric-violet transition-all duration-300 hover:shadow-lg hover:shadow-electric-violet/20;
+    /* Focus styles for interactive cards */
+    @apply focus-within:ring-4 focus-within:ring-electric-violet focus-within:ring-opacity-50;
+  }
+  
+  /* Form Input Accessibility */
+  .input-field {
+    @apply w-full px-4 py-3 bg-black border-2 border-gray-700 rounded-sm text-white placeholder-gray-400;
+    @apply focus:border-electric-violet focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-30;
+    min-height: 44px;
+  }
+  
+  .input-field:invalid {
+    @apply border-red-500;
+  }
+  
+  .input-field[aria-invalid="true"] {
+    @apply border-red-500;
+  }
+  
+  /* Error message styling */
+  .error-message {
+    @apply text-red-400 text-sm mt-2 font-medium;
+  }
+  
+  /* Success message styling */
+  .success-message {
+    @apply text-green-400 text-sm mt-2 font-medium;
+  }
+  
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply absolute top-0 left-0 z-50 bg-electric-violet text-black px-4 py-2 font-bold;
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+  }
+  
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .btn-primary {
+      @apply border-2 border-white;
+    }
+    
+    .btn-secondary {
+      @apply border-4 border-electric-violet;
+    }
+    
+    .card {
+      @apply border-2 border-gray-400;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost,
+    .card {
+      @apply transition-none transform-none;
+    }
+    
+    .glitch-text::before,
+    .glitch-text::after {
+      animation: none;
+    }
+    
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  
+  /* Link styles with proper focus indicators */
+  .link {
+    @apply text-electric-violet hover:text-electric-violet-light underline decoration-2 underline-offset-2;
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+  }
+  
+  /* Navigation link styles */
+  .nav-link {
+    @apply text-white hover:text-electric-violet font-medium transition-colors duration-300;
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Mobile menu button accessibility */
+  .mobile-menu-button {
+    @apply p-3 text-white hover:text-electric-violet transition-colors duration-300;
+    @apply focus:outline-none focus:ring-4 focus:ring-electric-violet focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-black;
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .terminal-header {
