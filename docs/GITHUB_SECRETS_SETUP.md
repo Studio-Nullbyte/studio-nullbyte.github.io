@@ -1,99 +1,143 @@
-# GitHub Secrets Setup for Environment Variables
+# GitHub Repository Secrets Setup Guide
 
-## 🔐 **Step-by-Step Guide**
+## 📋 **Step-by-Step Setup**
 
-### 1. Go to Repository Settings
+### 1. **Navigate to Repository Settings**
 1. Go to your GitHub repository: `https://github.com/Studio-Nullbyte/studio-nullbyte.github.io`
-2. Click **Settings** (tab at the top)
+2. Click on **Settings** tab
 3. In the left sidebar, click **Secrets and variables** → **Actions**
 
-### 2. Add Repository Secrets
-Click **"New repository secret"** and add each of these:
+### 2. **Add Repository Secrets**
+Click **New repository secret** for each of the following:
 
-#### Secret 1: VITE_SUPABASE_URL
-- **Name**: `VITE_SUPABASE_URL`
-- **Value**: `your_supabase_project_url_here` (from your .env file)
-
-#### Secret 2: VITE_SUPABASE_ANON_KEY  
-- **Name**: `VITE_SUPABASE_ANON_KEY`
-- **Value**: `your_supabase_anon_key_here` (from your .env file)
-
-#### Secret 3: VITE_STRIPE_PUBLISHABLE_KEY
-- **Name**: `VITE_STRIPE_PUBLISHABLE_KEY`  
-- **Value**: `pk_live_51RlCWuP59y3jEuN3gIe4hsjMbigZtdb9iIGCO7jk5a0O9lNFYRl5iJTlJTOZseBW8KPWTEmQh6ApI2y9gcno10A800CSEfdgPo` (from your .env file)
-
-#### Secret 4: VITE_CRISP_WEBSITE_ID
-- **Name**: `VITE_CRISP_WEBSITE_ID`
-- **Value**: `your-crisp-website-id` (from Crisp Dashboard after signup)
-
-#### Secret 5: VITE_EMAILJS_SERVICE_ID
-- **Name**: `VITE_EMAILJS_SERVICE_ID`
-- **Value**: `your-emailjs-service-id` (from EmailJS Dashboard)
-
-#### Secret 6: VITE_EMAILJS_TEMPLATE_ID
-- **Name**: `VITE_EMAILJS_TEMPLATE_ID`
-- **Value**: `your-emailjs-template-id` (from EmailJS Dashboard)
-
-#### Secret 7: VITE_EMAILJS_PUBLIC_KEY
-- **Name**: `VITE_EMAILJS_PUBLIC_KEY`
-- **Value**: `your-emailjs-public-key` (from EmailJS Dashboard)
-
-### 3. Verify Setup
-After adding all secrets, you should see:
-- ✅ VITE_SUPABASE_URL
-- ✅ VITE_SUPABASE_ANON_KEY  
-- ✅ VITE_STRIPE_PUBLISHABLE_KEY
-- ✅ VITE_CRISP_WEBSITE_ID
-- ✅ VITE_EMAILJS_SERVICE_ID
-- ✅ VITE_EMAILJS_TEMPLATE_ID
-- ✅ VITE_EMAILJS_PUBLIC_KEY
-
-### 4. Test the Build
-1. **Commit and push** any changes to trigger the GitHub Action
-2. Go to **Actions** tab in your repository
-3. Watch the build process - it should now have access to your environment variables
-4. If successful, your site will be deployed to GitHub Pages with Stripe working!
-
-## 🛡️ **Security Benefits**
-
-- ✅ **Environment variables are secure** - Only visible to repository maintainers
-- ✅ **No sensitive data in code** - Your .env file stays local
-- ✅ **Encrypted storage** - GitHub encrypts all secrets
-- ✅ **Limited access** - Only GitHub Actions can read these values
-
-## 📁 **File Status**
-
-### Keep Local (Never Commit):
-- ❌ `.env` - Contains your actual secrets
-- ❌ `.env.local` - Local development overrides
-
-### Safe to Commit:
-- ✅ `.env.example` - Template with placeholder values
-- ✅ GitHub Actions workflow - Uses secret references
-
-## 🔧 **Alternative: Environment Template**
-
-You could create a `.env.example` file (safe to commit):
-
-```properties
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_project_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-# Stripe Configuration  
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_or_pk_live_your_stripe_key_here
-
-# App Configuration
-VITE_APP_TITLE=Studio Nullbyte
+#### **Supabase Configuration**
+```
+Name: VITE_SUPABASE_URL
+Value: your_supabase_project_url_here
 ```
 
-This helps other developers know what environment variables they need.
+```
+Name: VITE_SUPABASE_ANON_KEY
+Value: your_supabase_anon_key_here
+```
 
-## 🚀 **Next Steps**
+#### **Stripe Configuration**
+```
+Name: VITE_STRIPE_PUBLISHABLE_KEY
+Value: pk_live_51RlCWuP59y3jEuN3gIe4hsjMbigZtdb9iIGCO7jk5a0O9lNFYRl5iJTlJTOZseBW8KPWTEmQh6ApI2y9gcno10A800CSEfdgPo
+```
 
-1. **Set up the GitHub Secrets** using the values from your local `.env` file
-2. **Push your code** to trigger a new build
-3. **Check the Actions tab** to see if the build succeeds
-4. **Test your deployed site** to ensure Stripe integration works
+#### **Crisp Chat Configuration**
+```
+Name: VITE_CRISP_WEBSITE_ID
+Value: edecbf12-1559-474c-9d81-6915a18cf171
+```
 
-After this setup, your GitHub Pages deployment will have access to all the environment variables it needs! 🎉
+#### **EmailJS Configuration**
+```
+Name: VITE_EMAILJS_SERVICE_ID
+Value: service_uiopigv
+```
+
+```
+Name: VITE_EMAILJS_TEMPLATE_ID
+Value: template_t37v8ek
+```
+
+```
+Name: VITE_EMAILJS_PUBLIC_KEY
+Value: 8v-_cpdn0TjBj35YF
+```
+
+#### **PayPal Configuration**
+```
+Name: VITE_PAYPAL_CLIENT_ID
+Value: AcG5qPSjS9Mm6BnqfbNCdl5uUFD9NsQUreAbZZCpfS2EDP_MiNE1j_yIIRbDb-tZMi21_HT29bMBHJDP
+```
+
+```
+Name: VITE_PAYPAL_API_BASE
+Value: https://api.paypal.com
+```
+
+#### **Square Configuration**
+```
+Name: VITE_SQUARE_APPLICATION_ID
+Value: sq0idp-Y12sAu8fu2t-3uP9HwXk-A
+```
+
+```
+Name: VITE_SQUARE_LOCATION_ID
+Value: L6QRE56637GZ2
+```
+
+```
+Name: VITE_SQUARE_ENVIRONMENT
+Value: production
+```
+
+## 🔒 **Security Best Practices**
+
+### **✅ Safe for Repository Secrets:**
+- **Stripe Publishable Key**: Designed for client-side use
+- **PayPal Client ID**: Public identifier for client-side
+- **Square Application ID**: Public identifier for client-side
+- **Crisp Website ID**: Public website identifier
+- **EmailJS IDs**: Public service identifiers
+
+### **⚠️ Keep These Private:**
+- Never commit secret/private keys to the repository
+- Use GitHub Secrets for all sensitive configuration
+- Regularly rotate API keys when possible
+
+## 🚀 **Deployment Process**
+
+Once secrets are set up:
+
+1. **Push to main branch** triggers automatic deployment
+2. **GitHub Actions** builds the site with secrets injected
+3. **GitHub Pages** serves the built static files
+4. **Environment variables** are baked into the build (client-side accessible)
+
+## 📝 **Important Notes**
+
+### **Client-Side Visibility:**
+- All `VITE_*` variables become visible in the browser
+- This is normal and expected for client-side configuration
+- Never use server-side/private keys in `VITE_*` variables
+
+### **Environment Differences:**
+- **Local Development**: Uses `.env` file
+- **GitHub Pages**: Uses GitHub Secrets
+- **Production**: All variables are compiled into JavaScript
+
+### **Verification:**
+After deployment, you can verify by:
+1. Opening browser dev tools on your live site
+2. Checking that payment integrations work
+3. Confirming API calls are made with correct credentials
+
+## 🔧 **Troubleshooting**
+
+### **Build Fails:**
+- Check that all required secrets are set
+- Verify secret names match exactly (case-sensitive)
+- Ensure no typos in secret values
+
+### **Payment Not Working:**
+- Verify API keys are for correct environment (sandbox vs production)
+- Check browser console for error messages
+- Confirm payment provider settings allow your domain
+
+### **Missing Variables:**
+- Add any missing secrets to repository settings
+- Re-run the deployment workflow
+- Check GitHub Actions logs for specific errors
+
+---
+
+**Next Steps:**
+1. Add all secrets to your GitHub repository
+2. Push any changes to trigger deployment
+3. Test the live site to confirm everything works
+4. Monitor GitHub Actions for any build errors
