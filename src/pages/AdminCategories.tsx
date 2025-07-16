@@ -354,77 +354,120 @@ export default function AdminCategories() {
               </div>
             </div>
 
-            {/* Search */}
+            {/* Search and Filters */}
             <div className="bg-code-gray-light border border-gray-700 rounded-lg p-6 mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search categories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-code-gray border border-gray-600 pl-10 pr-4 py-2 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
-                />
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search categories..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-code-gray border border-gray-600 pl-10 pr-4 py-2 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors"
+                  />
+                </div>
+
+                {/* Results Count */}
+                <div className="flex items-center justify-end">
+                  <span className="font-mono text-gray-400 text-sm">
+                    {filteredCategories.length} of {categories.length} categories
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Categories Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCategories.map((category, index) => (
-                <motion.div
-                  key={category.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-code-gray-light border border-gray-700 rounded-lg p-6 hover:border-electric-violet/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-electric-violet/20 rounded-lg flex items-center justify-center">
-                        <Tag className="w-5 h-5 text-electric-violet" />
-                      </div>
-                      <div>
-                        <h3 className="font-mono text-white text-lg">{category.name}</h3>
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${
-                          category.is_active 
-                            ? 'bg-terminal-green/20 text-terminal-green border border-terminal-green/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}>
-                          {category.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {category.description && (
-                    <p className="text-gray-400 font-mono text-sm mb-4 line-clamp-2">
-                      {category.description}
-                    </p>
-                  )}
-
-                  <div className="text-xs font-mono text-gray-500 mb-4">
-                    Created {new Date(category.created_at).toLocaleDateString()}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openEditForm(category)}
-                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit
-                    </button>
-                    
-                    <button
-                      onClick={() => handleDelete(category.id, category.name)}
-                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Delete
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+            {/* Categories Table */}
+            <div className="bg-code-gray-light border border-gray-700 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-code-gray border-b border-gray-700">
+                    <tr>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Name</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Slug</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Description</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Status</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Created</th>
+                      <th className="text-left p-4 font-mono text-gray-300 text-sm">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCategories.map((category, index) => (
+                      <motion.tr
+                        key={category.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="border-b border-gray-700 hover:bg-code-gray/50 transition-colors"
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-electric-violet/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Tag className="w-4 h-4 text-electric-violet" />
+                            </div>
+                            <span className="font-mono text-white text-sm font-medium">
+                              {category.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="font-mono text-gray-300 text-sm bg-code-gray px-2 py-1 rounded">
+                            {category.slug}
+                          </span>
+                        </td>
+                        <td className="p-4 max-w-xs">
+                          <p className="font-mono text-gray-400 text-sm truncate" title={category.description || 'No description'}>
+                            {category.description || 'No description'}
+                          </p>
+                        </td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono border ${
+                            category.is_active 
+                              ? 'bg-terminal-green/20 text-terminal-green border-terminal-green/30' 
+                              : 'bg-red-500/20 text-red-400 border-red-500/30'
+                          }`}>
+                            {category.is_active ? (
+                              <>
+                                <CheckCircle className="w-3 h-3" />
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-3 h-3" />
+                                Inactive
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className="font-mono text-gray-400 text-sm">
+                            {new Date(category.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openEditForm(category)}
+                              className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              Edit
+                            </button>
+                            
+                            <button
+                              onClick={() => handleDelete(category.id, category.name)}
+                              className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {filteredCategories.length === 0 && (

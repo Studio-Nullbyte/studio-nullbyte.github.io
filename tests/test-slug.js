@@ -1,5 +1,5 @@
 // Test script to verify slug generation
-import { generateSlug, generateUniqueSlug } from './utils/slugify'
+import { generateSlug, generateUniqueSlug } from '../src/utils/slugify.js'
 
 // Test cases
 const testCases = [

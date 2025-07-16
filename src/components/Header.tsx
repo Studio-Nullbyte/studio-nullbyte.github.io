@@ -101,7 +101,7 @@ const Header: React.FC = () => {
               />
             </div>
             <span className="font-mono text-lg sm:text-xl font-bold glitch-text group-hover:text-electric-violet transition-colors">
-              <span className="hidden xs:inline">Studio</span><span className="text-electric-violet">Nullbyte</span>
+              <span className="mr-1 hidden xs:inline">Studio</span><span className="text-electric-violet cursor-blink">Nullbyte</span>
             </span>
           </Link>
 

@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
                 />
               </div>
               <span className="font-mono text-lg sm:text-xl font-bold">
-                Studio<span className="text-electric-violet">Nullbyte</span>
+                Studio<span className="text-electric-violet ml-1 cursor-blink">Nullbyte</span>
               </span>
             </div>
             <p className="text-gray-400 font-mono text-sm mb-4 max-w-md">
@@ -113,14 +113,6 @@ const Footer: React.FC = () => {
             <Link to="/terms-of-service" className="text-gray-400 hover:text-white text-sm transition-colors">
               Terms of Service
             </Link>
-          </div>
-        </div>
-
-        {/* Terminal Signal Line */}
-        <div className="mt-6 sm:mt-8 pt-4 border-t border-gray-800">
-          <div className="flex items-center space-x-2 text-terminal-green font-mono text-xs overflow-hidden">
-            <span>$</span>
-            <span className="cursor-blink truncate">contact studionullbyte@gmail.com</span>
           </div>
         </div>
       </div>

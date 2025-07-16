@@ -166,7 +166,7 @@ export default function AdminSidebar({ className = '' }: AdminSidebarProps) {
           {/* Footer */}
           <div className="mt-6 pt-4 border-t border-gray-700">
             <p className="text-xs font-mono text-gray-500 text-center">
-              Studio Nullbyte
+              Studio <span className="cursor-blink">Nullbyte</span>
             </p>
             <p className="text-xs font-mono text-gray-600 text-center">
               v1.0.0

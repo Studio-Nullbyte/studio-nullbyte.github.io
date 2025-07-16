@@ -116,7 +116,7 @@ const Home: React.FC = () => {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-mono font-bold mb-4 sm:mb-6 leading-tight"
             >
               Modular tools for the
-              <span className="block text-electric-violet cursor-blink mt-2">
+              <span className="block text-electric-violet mt-2">
                 design-minded developer
               </span>
             </h1>
