@@ -11,7 +11,7 @@ interface AuthState {
 
 interface AuthActions {
   signUp: (email: string, password: string, userData?: any) => Promise<{ data: any; error: AuthError | null }>
-  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
   updateProfile: (updates: any) => Promise<{ data: any; error: any }>
@@ -126,7 +126,26 @@ export function useAuth(): AuthState & AuthActions {
 
     initializeAuth()
 
-    // Listen for auth changes
+    // Handle session cleanup based on remember me preference
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true'
+      const tempSession = sessionStorage.getItem('tempSession') === 'true'
+      
+      if (!rememberMe && tempSession) {
+        // Clear the session if remember me was not checked
+        supabase.auth.signOut()
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [])
+
+  // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_, session) => {
@@ -161,9 +180,21 @@ export function useAuth(): AuthState & AuthActions {
     })
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       const result = await supabase.auth.signInWithPassword({ email, password })
+      
+      // After successful sign in, store the remember me preference
+      if (result.data?.session) {
+        localStorage.setItem('rememberMe', rememberMe.toString())
+        
+        // If remember me is false, we'll handle this in the sign out
+        if (!rememberMe) {
+          // Set a flag to clear session on browser close
+          sessionStorage.setItem('tempSession', 'true')
+        }
+      }
+      
       return result
     } catch (error) {
       return { data: null, error: error as AuthError }
@@ -177,6 +208,10 @@ export function useAuth(): AuthState & AuthActions {
       if (error) {
         return { error }
       }
+      
+      // Clear remember me preferences
+      localStorage.removeItem('rememberMe')
+      sessionStorage.removeItem('tempSession')
       
       // Clear local state immediately
       setUser(null)
