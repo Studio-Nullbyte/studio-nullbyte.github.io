@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { debugAdminState } from '../utils/adminDebug'
+import { testSupabaseConnection, checkSupabaseStatus } from '../utils/supabaseDiagnostics'
 
 interface AdminStats {
   totalUsers: number
@@ -216,6 +217,15 @@ export function useAdmin() {
   // Admin Statistics
   const getAdminStats = async (): Promise<AdminStats> => {
     try {
+      // Check Supabase connection first
+      const { error: healthError } = await supabase.auth.getSession()
+      if (healthError) {
+        console.error('Supabase connection error:', healthError)
+        throw new Error(`Supabase connection failed: ${healthError.message}`)
+      }
+
+      console.log('Fetching admin stats from Supabase...')
+      
       const [
         usersResult,
         productsResult,
@@ -241,6 +251,37 @@ export function useAdmin() {
           .eq('status', 'new')
       ])
 
+      // Check for specific errors in each query
+      if (usersResult.error) {
+        console.error('Users query error:', usersResult.error)
+        console.error('Users error details:', {
+          message: usersResult.error.message,
+          details: usersResult.error.details,
+          hint: usersResult.error.hint,
+          code: usersResult.error.code
+        })
+      }
+
+      if (productsResult.error) {
+        console.error('Products query error:', productsResult.error)
+      }
+
+      if (ordersResult.error) {
+        console.error('Orders query error:', ordersResult.error)
+      }
+
+      if (revenueResult.error) {
+        console.error('Revenue query error:', revenueResult.error)
+      }
+
+      if (pendingOrdersResult.error) {
+        console.error('Pending orders query error:', pendingOrdersResult.error)
+      }
+
+      if (contactsResult.error) {
+        console.error('Contacts query error:', contactsResult.error)
+      }
+
       const totalRevenue = revenueResult.data?.reduce(
         (sum, order) => sum + parseFloat(order.total_amount.toString()),
         0
@@ -256,6 +297,19 @@ export function useAdmin() {
       }
     } catch (error) {
       console.error('Error fetching admin stats:', error)
+      
+      // Check if it's a 503 Service Unavailable error
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as any).message || ''
+        if (errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+          console.error('🔴 Supabase 503 Error - Possible causes:')
+          console.error('   • Project may be paused (free tier)')
+          console.error('   • Database connection issues')
+          console.error('   • Temporary service outage')
+          console.error('   • Check your Supabase dashboard: https://supabase.com/dashboard')
+        }
+      }
+      
       throw error
     }
   }
@@ -896,6 +950,13 @@ export function useAdmin() {
     }
   }
 
+  // Diagnostic function to test Supabase connection
+  const diagnoseSupabase = async () => {
+    console.log('🔍 Running Supabase Diagnostics...')
+    await checkSupabaseStatus()
+    return await testSupabaseConnection()
+  }
+
   return {
     isAdmin,
     loading,
@@ -923,7 +984,9 @@ export function useAdmin() {
     deleteCategory,
     // Image upload
     uploadProductImage,
-    deleteProductImage
+    deleteProductImage,
+    // Diagnostics
+    diagnoseSupabase
   }
 }
 
