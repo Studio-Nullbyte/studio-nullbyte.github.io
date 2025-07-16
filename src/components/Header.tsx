@@ -15,13 +15,9 @@ const Header: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
-  const { user } = useAuthContext()
+  const { user, forceSignOut } = useAuthContext()
   const { isAdmin, profile } = useAdminState()
   const { getTotalItems } = useCart()
-
-  // Get forceSignOut from auth context for emergency logout
-  const authHook = useAuthContext()
-  const forceSignOut = (authHook as any).forceSignOut
 
   console.log('🎯 Header: Render state', {
     user: !!user,

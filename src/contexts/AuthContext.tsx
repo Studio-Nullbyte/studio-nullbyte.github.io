@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData?: any) => Promise<{ data: any; error: AuthError | null }>
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
+  forceSignOut: () => { error: AuthError | null }
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
   updateProfile: (updates: any) => Promise<{ data: any; error: any }>
   updatePassword: (password: string) => Promise<{ data: any; error: AuthError | null }>
