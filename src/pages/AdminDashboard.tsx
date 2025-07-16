@@ -9,11 +9,13 @@ import {
   Clock, 
   Mail,
   Activity,
-  BarChart3
+  BarChart3,
+  Bug
 } from 'lucide-react'
 import { useAdmin } from '../hooks/useAdmin'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import AdminDebugPanel from '../components/AdminDebugPanel'
 
 interface StatCard {
   title: string
@@ -35,6 +37,7 @@ export default function AdminDashboard() {
     newContactSubmissions: 0
   })
   const [statsLoading, setStatsLoading] = useState(true)
+  const [debugPanelOpen, setDebugPanelOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -133,9 +136,19 @@ export default function AdminDashboard() {
           >
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Activity className="w-6 h-6 text-electric-violet" />
-                <h1 className="text-3xl font-mono text-white">Admin Dashboard</h1>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Activity className="w-6 h-6 text-electric-violet" />
+                  <h1 className="text-3xl font-mono text-white">Admin Dashboard</h1>
+                </div>
+                <button
+                  onClick={() => setDebugPanelOpen(true)}
+                  className="btn-secondary flex items-center gap-2"
+                  title="Open Admin Debug Panel"
+                >
+                  <Bug className="w-4 h-4" />
+                  Debug
+                </button>
               </div>
               <p className="text-gray-400 font-mono">
                 Manage templates, users, and orders for Studio Nullbyte
@@ -230,6 +243,12 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
       </div>
+      
+      {/* Debug Panel */}
+      <AdminDebugPanel 
+        isOpen={debugPanelOpen} 
+        onClose={() => setDebugPanelOpen(false)} 
+      />
     </AdminLayout>
   )
 }

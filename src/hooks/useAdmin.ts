@@ -260,58 +260,87 @@ export function useAdmin() {
     }
   }
 
-  // User Management
+  // User Management with retry logic
   const getUsers = async () => {
-    try {
-      // Get user profiles with auth data from profiles table
-      const { data: profiles, error } = await supabase
-        .from('user_profiles')
-        .select(`
-          user_id,
-          email,
-          full_name,
-          avatar_url,
-          role,
-          is_active,
-          created_at,
-          updated_at
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Supabase error:', error)
-        throw error
-      }
-
-      // Transform profile data to match AdminUser interface
-      const usersWithProfiles = profiles?.map(profile => {
-        const [firstName, lastName] = (profile.full_name || '').split(' ')
+    const maxRetries = 3
+    let lastError = null
+    
+    for (let retry = 0; retry < maxRetries; retry++) {
+      try {
+        debugAdminState('fetching users', { retry, maxRetries })
         
-        return {
-          id: profile.user_id,
-          email: profile.email || '',
-          first_name: firstName || null,
-          last_name: lastName || null,
-          avatar_url: profile.avatar_url || null,
-          role: (profile.role as 'user' | 'admin') || 'user',
-          is_active: profile.is_active ?? true,
-          created_at: profile.created_at,
-          last_sign_in_at: null, // Not available from profiles table
-          email_confirmed_at: null // Not available from profiles table
-        }
-      }) || []
+        // Get user profiles with auth data from profiles table
+        const { data: profiles, error } = await supabase
+          .from('user_profiles')
+          .select(`
+            user_id,
+            email,
+            full_name,
+            avatar_url,
+            role,
+            is_active,
+            created_at,
+            updated_at
+          `)
+          .order('created_at', { ascending: false })
 
-      return usersWithProfiles
-    } catch (error) {
-      console.error('Error fetching users:', error)
-      
-      // If the table doesn't have the required columns, provide helpful error message
-      if (error instanceof Error && error.message.includes('column')) {
-        throw new Error('User profiles table is missing required columns. Please run the database update script.')
+        if (error) {
+          lastError = error
+          console.error('Supabase error on retry', retry, ':', error)
+          
+          // If this is a permissions/RLS error, don't retry
+          if (error.code === 'PGRST301' || error.message.includes('RLS')) {
+            throw error
+          }
+          
+          // Wait before retrying
+          if (retry < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
+            continue
+          }
+          
+          throw error
+        }
+
+        debugAdminState('users fetched successfully', { count: profiles?.length || 0 })
+
+        // Transform profile data to match AdminUser interface
+        const usersWithProfiles = profiles?.map((profile: any) => {
+          const [firstName, lastName] = (profile.full_name || '').split(' ')
+          
+          return {
+            id: profile.user_id,
+            email: profile.email || '',
+            first_name: firstName || null,
+            last_name: lastName || null,
+            avatar_url: profile.avatar_url || null,
+            role: (profile.role as 'user' | 'admin') || 'user',
+            is_active: profile.is_active ?? true,
+            created_at: profile.created_at,
+            last_sign_in_at: null, // Not available from profiles table
+            email_confirmed_at: null // Not available from profiles table
+          }
+        }) || []
+
+        return usersWithProfiles
+      } catch (error) {
+        lastError = error
+        console.error('Error fetching users on retry', retry, ':', error)
+        
+        // If this is the last retry, throw the error
+        if (retry === maxRetries - 1) {
+          if (error instanceof Error && error.message.includes('column')) {
+            throw new Error('User profiles table is missing required columns. Please run the database update script.')
+          }
+          throw error
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
       }
-      
-      throw error
     }
+    
+    throw lastError || new Error('Failed to fetch users after multiple retries')
   }
 
   const updateUser = async (userId: string, updates: Partial<User>) => {
@@ -359,23 +388,58 @@ export function useAdmin() {
     }
   }
 
-  // Product Management
+  // Product Management with retry logic
   const getProducts = async (): Promise<Product[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          category:categories(name, slug)
-        `)
-        .order('created_at', { ascending: false })
+    const maxRetries = 3
+    let lastError = null
+    
+    for (let retry = 0; retry < maxRetries; retry++) {
+      try {
+        debugAdminState('fetching products', { retry, maxRetries })
+        
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            category:categories(name, slug)
+          `)
+          .order('created_at', { ascending: false })
 
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      console.error('Error fetching products:', error)
-      throw error
+        if (error) {
+          lastError = error
+          console.error('Supabase error on retry', retry, ':', error)
+          
+          // If this is a permissions/RLS error, don't retry
+          if (error.code === 'PGRST301' || error.message.includes('RLS')) {
+            throw error
+          }
+          
+          // Wait before retrying
+          if (retry < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
+            continue
+          }
+          
+          throw error
+        }
+
+        debugAdminState('products fetched successfully', { count: data?.length || 0 })
+        return data || []
+      } catch (error) {
+        lastError = error
+        console.error('Error fetching products on retry', retry, ':', error)
+        
+        // If this is the last retry, throw the error
+        if (retry === maxRetries - 1) {
+          throw error
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
+      }
     }
+    
+    throw lastError || new Error('Failed to fetch products after multiple retries')
   }
 
   const createProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
@@ -639,20 +703,55 @@ export function useAdmin() {
     }
   }
 
-  // Categories Management
+  // Categories Management with retry logic
   const getCategories = async (): Promise<Category[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name')
+    const maxRetries = 3
+    let lastError = null
+    
+    for (let retry = 0; retry < maxRetries; retry++) {
+      try {
+        debugAdminState('fetching categories', { retry, maxRetries })
+        
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name')
 
-      if (error) throw error
-      return data || []
-    } catch (error) {
-      console.error('Error fetching categories:', error)
-      throw error
+        if (error) {
+          lastError = error
+          console.error('Supabase error on retry', retry, ':', error)
+          
+          // If this is a permissions/RLS error, don't retry
+          if (error.code === 'PGRST301' || error.message.includes('RLS')) {
+            throw error
+          }
+          
+          // Wait before retrying
+          if (retry < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
+            continue
+          }
+          
+          throw error
+        }
+
+        debugAdminState('categories fetched successfully', { count: data?.length || 0 })
+        return data || []
+      } catch (error) {
+        lastError = error
+        console.error('Error fetching categories on retry', retry, ':', error)
+        
+        // If this is the last retry, throw the error
+        if (retry === maxRetries - 1) {
+          throw error
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
+      }
     }
+    
+    throw lastError || new Error('Failed to fetch categories after multiple retries')
   }
 
   const createCategory = async (category: { name: string; slug: string; description?: string }) => {
