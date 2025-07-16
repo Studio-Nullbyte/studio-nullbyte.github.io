@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Out Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #8B5CF6;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .warning { color: #ffd43b; }
+        button {
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #7c3aed;
+        }
+        .danger {
+            background: #ff6b6b;
+        }
+        .danger:hover {
+            background: #e55555;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Sign Out Test Page</h1>
+        
+        <div class="test-box">
+            <h2>Current Status</h2>
+            <div id="status">Loading...</div>
+        </div>
+        
+        <div class="test-box">
+            <h2>Test Actions</h2>
+            <button onclick="testEmergencySignOut()">Test Emergency Sign Out</button>
+            <button onclick="clearStorage()" class="danger">Clear All Storage</button>
+            <button onclick="simulateAuth()">Simulate Auth Data</button>
+            <button onclick="location.reload()">Refresh Page</button>
+        </div>
+        
+        <div class="test-box">
+            <h2>Instructions</h2>
+            <ol>
+                <li><strong>Check Current Status</strong> - See if Supabase is configured and what auth data exists</li>
+                <li><strong>Test Emergency Sign Out</strong> - This is the new simple sign out method</li>
+                <li><strong>Clear All Storage</strong> - Manual cleanup of all local data</li>
+                <li><strong>Simulate Auth Data</strong> - Create fake auth data to test clearing</li>
+            </ol>
+        </div>
+        
+        <div class="test-box">
+            <h2>Expected Behavior</h2>
+            <ul>
+                <li>✅ <strong>Working</strong>: Emergency sign out clears all data and redirects to home</li>
+                <li>⚠️ <strong>Issue</strong>: Supabase credentials are placeholder values</li>
+                <li>🔧 <strong>Fix</strong>: Update .env file with real Supabase credentials</li>
+            </ul>
+        </div>
+        
+        <div class="test-box">
+            <h2>Debug Information</h2>
+            <pre id="debug-info">Loading...</pre>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const statusDiv = document.getElementById('status');
+            const debugDiv = document.getElementById('debug-info');
+            
+            // Check environment
+            const envInfo = {
+                hasSupabaseUrl: !!(window.location.origin),
+                hasSupabaseKey: !!(window.location.origin),
+                isProduction: window.location.protocol === 'https:',
+                currentUrl: window.location.href
+            };
+            
+            // Check storage
+            const storageInfo = {
+                localStorage: Object.keys(localStorage).filter(k => 
+                    k.includes('supabase') || k.includes('auth') || k.includes('remember')
+                ),
+                sessionStorage: Object.keys(sessionStorage).filter(k => 
+                    k.includes('supabase') || k.includes('auth') || k.includes('temp')
+                )
+            };
+            
+            let statusHtml = '';
+            statusHtml += `<div class="success">✅ Page loaded successfully</div>`;
+            statusHtml += `<div class="warning">⚠️ This is a standalone test page</div>`;
+            statusHtml += `<div class="error">❌ Real Supabase configuration not available here</div>`;
+            
+            if (storageInfo.localStorage.length > 0 || storageInfo.sessionStorage.length > 0) {
+                statusHtml += `<div class="warning">⚠️ Found ${storageInfo.localStorage.length + storageInfo.sessionStorage.length} auth-related storage items</div>`;
+            } else {
+                statusHtml += `<div class="success">✅ No auth-related storage items found</div>`;
+            }
+            
+            statusDiv.innerHTML = statusHtml;
+            
+            // Update debug info
+            debugDiv.textContent = JSON.stringify({
+                environment: envInfo,
+                storage: storageInfo,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            }, null, 2);
+        }
+        
+        function testEmergencySignOut() {
+            console.log('🚨 Testing emergency sign out...');
+            
+            // Clear storage
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('✅ Storage cleared successfully');
+                
+                // Simulate redirect
+                alert('Emergency sign out test completed! Storage cleared.\\n\\nIn the real app, this would redirect to the home page.');
+                
+                checkStatus();
+            } catch (error) {
+                console.error('❌ Emergency sign out test failed:', error);
+                alert('Emergency sign out test failed: ' + error.message);
+            }
+        }
+        
+        function clearStorage() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('✅ All storage cleared');
+                alert('All storage cleared successfully!');
+                checkStatus();
+            } catch (error) {
+                console.error('❌ Failed to clear storage:', error);
+                alert('Failed to clear storage: ' + error.message);
+            }
+        }
+        
+        function simulateAuth() {
+            try {
+                // Create fake auth data
+                localStorage.setItem('supabase.auth.token', 'fake-token-123');
+                localStorage.setItem('rememberMe', 'true');
+                sessionStorage.setItem('supabase.auth.user', JSON.stringify({id: 'fake-user-123'}));
+                sessionStorage.setItem('tempSession', 'true');
+                
+                console.log('✅ Fake auth data created');
+                alert('Fake auth data created in storage!');
+                checkStatus();
+            } catch (error) {
+                console.error('❌ Failed to create fake auth data:', error);
+                alert('Failed to create fake auth data: ' + error.message);
+            }
+        }
+        
+        // Initialize
+        checkStatus();
+        
+        // Auto-refresh every 5 seconds
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html>

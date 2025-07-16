@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { emergencySignOut } from '../utils/emergencySignOut'
 
 export default function UserSettings() {
   const { user, profile, updateProfile, updatePassword, signOut, refreshProfile } = useAuthContext()
@@ -128,9 +129,16 @@ export default function UserSettings() {
     }
   }
 
-  const handleSignOut = async () => {
-    await signOut()
-    navigate('/')
+  const handleSignOut = () => {
+    console.log('🔴 UserSettings: Sign out button clicked - using emergency sign out!')
+    
+    // Show confirmation
+    const confirmSignOut = confirm('Are you sure you want to sign out?')
+    
+    if (confirmSignOut) {
+      // Use emergency sign out (this will reload the page)
+      emergencySignOut()
+    }
   }
 
   if (!user) {

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { useAdminState } from '../hooks/useAdminState'
 import { useCart } from '../contexts/CartContext'
 import { useKeyboardNavigation } from '../utils/accessibility'
+import { emergencySignOut } from '../utils/emergencySignOut'
 import CartModal from './CartModal'
 
 const Header: React.FC = () => {
@@ -14,16 +15,20 @@ const Header: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
-  const navigate = useNavigate()
-  const { user, signOut } = useAuthContext()
+  const { user } = useAuthContext()
   const { isAdmin, profile } = useAdminState()
   const { getTotalItems } = useCart()
+
+  // Get forceSignOut from auth context for emergency logout
+  const authHook = useAuthContext()
+  const forceSignOut = (authHook as any).forceSignOut
 
   console.log('🎯 Header: Render state', {
     user: !!user,
     profile: !!profile,
     isAdmin,
     profileRole: profile?.role,
+    hasForceSignOut: typeof forceSignOut === 'function',
     timestamp: new Date().toISOString()
   })
 
@@ -33,20 +38,19 @@ const Header: React.FC = () => {
     setIsUserMenuOpen(false)
   })
 
-  const handleSignOut = async () => {
-    try {
-      const { error } = await signOut()
+  const handleSignOut = () => {
+    console.log('🔴 Header: Sign out button clicked - using emergency sign out!')
+    
+    // Show confirmation
+    const confirmSignOut = confirm('Are you sure you want to sign out?')
+    
+    if (confirmSignOut) {
+      // Close menus first
+      setIsUserMenuOpen(false)
+      setIsMenuOpen(false)
       
-      if (!error) {
-        // Close menus and redirect to home
-        setIsUserMenuOpen(false)
-        setIsMenuOpen(false)
-        navigate('/')
-      } else {
-        alert('Failed to sign out. Please try again.')
-      }
-    } catch (error) {
-      alert('An unexpected error occurred while signing out.')
+      // Use emergency sign out (this will reload the page)
+      emergencySignOut()
     }
   }
 

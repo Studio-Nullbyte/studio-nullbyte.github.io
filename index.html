@@ -49,21 +49,19 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.sandbox.paypal.com https://cdn.jsdelivr.net https://js.stripe.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.sandbox.paypal.com https://cdn.jsdelivr.net https://js.stripe.com https://client.crisp.chat;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://client.crisp.chat;
+      font-src 'self' https://fonts.gstatic.com https://client.crisp.chat;
       img-src 'self' data: https: blob:;
-      connect-src 'self' https://*.supabase.co https://www.paypal.com https://www.sandbox.paypal.com https://api.stripe.com;
+      connect-src 'self' https://*.supabase.co https://www.paypal.com https://www.sandbox.paypal.com https://api.stripe.com wss://client.relay.crisp.chat https://client.crisp.chat;
       frame-src https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
-      frame-ancestors 'none';
     ">
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">

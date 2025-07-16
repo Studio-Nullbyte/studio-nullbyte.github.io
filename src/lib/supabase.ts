@@ -4,11 +4,19 @@ import type { Database } from './types/database'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
+console.log('🔧 Supabase Configuration Check:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  urlLength: supabaseUrl.length,
+  keyLength: supabaseAnonKey.length
+})
+
 // Create a fallback client if environment variables are missing
 let supabase: any
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ Missing Supabase environment variables. Authentication will be disabled.')
+  console.warn('⚠️ Expected variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
   
   // Create a mock client for development
   supabase = {

@@ -16,6 +16,7 @@ interface AuthActions {
   signUp: (email: string, password: string, userData?: any) => Promise<{ data: any; error: AuthError | null }>
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ data: any; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
+  forceSignOut: () => { error: AuthError | null }
   resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
   updateProfile: (updates: any) => Promise<{ data: any; error: any }>
   updatePassword: (password: string) => Promise<{ data: any; error: AuthError | null }>
@@ -208,24 +209,101 @@ export function useAuth(): AuthState & AuthActions {
   }
 
   const signOut = async () => {
+    console.log('🔴 useAuth: Starting sign out process...')
+    
     try {
-      const { error } = await supabase.auth.signOut()
+      console.log('🔴 useAuth: Calling supabase.auth.signOut()...')
+      console.log('🔴 useAuth: Supabase client type:', typeof supabase)
+      console.log('🔴 useAuth: Supabase auth type:', typeof supabase?.auth)
       
-      if (error) {
-        return { error }
+      const result = await supabase.auth.signOut()
+      console.log('🔴 useAuth: Supabase signOut result:', result)
+      
+      if (result?.error) {
+        console.error('🔴 useAuth: Supabase signOut error:', result.error)
+        console.error('🔴 useAuth: Error details:', {
+          message: result.error.message,
+          status: result.error.status,
+          code: result.error.code,
+          details: result.error
+        })
+        
+        // If Supabase sign out fails, try force sign out
+        console.log('🔴 useAuth: Supabase sign out failed, trying force sign out...')
+        return forceSignOut()
       }
       
+      console.log('🔴 useAuth: Supabase signOut successful, clearing local state...')
+      
       // Clear remember me preferences
-      localStorage.removeItem('rememberMe')
-      sessionStorage.removeItem('tempSession')
+      try {
+        localStorage.removeItem('rememberMe')
+        sessionStorage.removeItem('tempSession')
+        console.log('🔴 useAuth: Cleared storage items')
+      } catch (storageError) {
+        console.warn('🔴 useAuth: Failed to clear storage:', storageError)
+      }
       
       // Clear local state immediately
       setUser(null)
       setSession(null)
       setProfile(null)
       
+      console.log('🔴 useAuth: Sign out completed successfully')
       return { error: null }
     } catch (error) {
+      console.error('🔴 useAuth: Sign out exception:', error)
+      console.error('🔴 useAuth: Exception details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        error
+      })
+      
+      // If exception occurs, try force sign out
+      console.log('🔴 useAuth: Exception occurred, trying force sign out...')
+      return forceSignOut()
+    }
+  }
+
+  const forceSignOut = () => {
+    console.log('🔴 useAuth: Force sign out - clearing all local state...')
+    
+    try {
+      // Clear all storage
+      localStorage.removeItem('rememberMe')
+      sessionStorage.removeItem('tempSession')
+      localStorage.removeItem('supabase.auth.token')
+      
+      // Clear all possible auth-related storage keys
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && (key.includes('supabase') || key.includes('auth'))) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key))
+      
+      // Clear session storage
+      const sessionKeysToRemove = []
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i)
+        if (key && (key.includes('supabase') || key.includes('auth'))) {
+          sessionKeysToRemove.push(key)
+        }
+      }
+      sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key))
+      
+      // Clear local state
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      setLoading(false)
+      
+      console.log('🔴 useAuth: Force sign out completed')
+      return { error: null }
+    } catch (error) {
+      console.error('🔴 useAuth: Force sign out failed:', error)
       return { error: error as AuthError }
     }
   }
@@ -272,6 +350,7 @@ export function useAuth(): AuthState & AuthActions {
     signUp,
     signIn,
     signOut,
+    forceSignOut,
     resetPassword,
     updateProfile,
     updatePassword,
