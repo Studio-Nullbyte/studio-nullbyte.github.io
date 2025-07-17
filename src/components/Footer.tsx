@@ -1,6 +1,7 @@
+import { Github, Mail } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Github, Mail } from 'lucide-react'
+import Logo from './Logo'
 
 const Footer: React.FC = () => {
   return (
@@ -11,10 +12,9 @@ const Footer: React.FC = () => {
           <div className="sm:col-span-2 lg:col-span-2">
             <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
               <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-                <img 
-                  src="/images/SNLogo.jpg" 
-                  alt="Studio Nullbyte Logo" 
-                  className="w-6 h-6 sm:w-8 sm:h-8 hover:scale-110 transition-transform duration-300"
+                <Logo
+                  size="md"
+                  className="text-white hover:text-electric-violet hover:scale-110 transition-all duration-300"
                 />
               </div>
               <span className="font-mono text-lg sm:text-xl font-bold">
@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
               </span>
             </div>
             <p className="text-gray-400 font-mono text-sm mb-4 max-w-md">
-              Modular tools for those who think in syntax and ship in silence.
+              Modular tools for the design-minded developer. Clean. Branded. Ready to deploy.
             </p>
             <div className="flex space-x-4">
               <a
@@ -104,7 +104,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <p className="text-gray-400 text-sm font-mono text-center sm:text-left">
-            © 2025 Studio Nullbyte. All rights reserved.
+            © 2025 Studio Nullbyte. Built with ☕ and code.
           </p>
           <div className="flex space-x-4 sm:space-x-6">
             <Link to="/privacy-policy" className="text-gray-400 hover:text-white text-sm transition-colors">

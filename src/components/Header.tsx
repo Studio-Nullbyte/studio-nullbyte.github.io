@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { LogOut, Menu, Settings, Shield, ShoppingCart, User, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useKeyboardNavigation } from '../utils/accessibility'
 import CartModal from './CartModal'
-import { logger } from '../utils/logger'
+import Logo from './Logo'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -74,25 +74,22 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-black/90 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'
+        }`}
       role="banner"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="nav-link flex items-center space-x-2 sm:space-x-3 group"
             aria-label="Studio Nullbyte - Home"
           >
             <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-              <img 
-                src="/images/SNLogo.jpg" 
-                alt="" 
-                className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-300"
-                role="presentation"
+              <Logo
+                size="md"
+                className="text-white group-hover:text-electric-violet group-hover:scale-110 transition-all duration-300"
               />
             </div>
             <span className="font-mono text-lg sm:text-xl font-bold glitch-text group-hover:text-electric-violet transition-colors">
@@ -106,26 +103,24 @@ const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`nav-link font-mono text-sm transition-colors hover:text-electric-violet ${
-                  location.pathname === item.path
+                className={`nav-link font-mono text-sm transition-colors hover:text-electric-violet ${location.pathname === item.path
                     ? 'text-electric-violet'
                     : 'text-gray-300'
-                }`}
+                  }`}
                 aria-current={location.pathname === item.path ? 'page' : undefined}
               >
                 {item.name}
               </Link>
             ))}
-            
+
             {/* Admin Link in Main Navigation */}
             {isAdmin && (
               <Link
                 to="/admin"
-                className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${
-                  location.pathname.startsWith('/admin')
+                className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${location.pathname.startsWith('/admin')
                     ? 'text-electric-violet'
                     : 'text-gray-300'
-                }`}
+                  }`}
               >
                 <Shield className="w-4 h-4" />
                 Admin
@@ -135,14 +130,14 @@ const Header: React.FC = () => {
 
           {/* Cart, User Menu, and Mobile Menu Button */}
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <button 
+            <button
               onClick={() => setIsCartOpen(true)}
               className="nav-link relative p-2 hover:bg-gray-800 rounded-sm transition-colors"
               aria-label={`Shopping cart - ${getTotalItems()} items`}
             >
               <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               {getTotalItems() > 0 && (
-                <span 
+                <span
                   className="absolute -top-1 -right-1 bg-electric-violet text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
                   aria-label={`${getTotalItems()} items in cart`}
                 >
@@ -150,7 +145,7 @@ const Header: React.FC = () => {
                 </span>
               )}
             </button>
-            
+
             {/* User Authentication */}
             {user ? (
               <div className="relative user-menu-container">
@@ -184,7 +179,7 @@ const Header: React.FC = () => {
                           <Settings className="w-4 h-4" />
                           Account Settings
                         </Link>
-                        
+
                         {/* Admin Menu Items */}
                         {isAdmin && (
                           <>
@@ -237,7 +232,7 @@ const Header: React.FC = () => {
                             </Link>
                           </>
                         )}
-                        
+
                         <hr className="border-gray-700 my-1" />
                         <button
                           onClick={handleSignOut}
@@ -260,7 +255,7 @@ const Header: React.FC = () => {
                 Sign In
               </Link>
             )}
-            
+
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="mobile-menu-button lg:hidden"
@@ -268,8 +263,8 @@ const Header: React.FC = () => {
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMenuOpen ? 
-                <X className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" /> : 
+              {isMenuOpen ?
+                <X className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" /> :
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               }
             </button>
@@ -292,31 +287,29 @@ const Header: React.FC = () => {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${
-                      location.pathname === item.path
+                    className={`font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${location.pathname === item.path
                         ? 'text-electric-violet'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   >
                     {item.name}
                   </Link>
                 ))}
-                
+
                 {/* Admin Link in Mobile Main Navigation */}
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${
-                      location.pathname.startsWith('/admin')
+                    className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${location.pathname.startsWith('/admin')
                         ? 'text-electric-violet'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   >
                     <Shield className="w-5 h-5" />
                     Admin
                   </Link>
                 )}
-                
+
                 {/* Mobile Auth Links */}
                 <hr className="border-gray-700 my-2" />
                 {user ? (
@@ -328,7 +321,7 @@ const Header: React.FC = () => {
                       <Settings className="w-5 h-5" />
                       Account Settings
                     </Link>
-                    
+
                     {/* Mobile Admin Menu Items */}
                     {isAdmin && (
                       <>
@@ -382,7 +375,7 @@ const Header: React.FC = () => {
                         <hr className="border-gray-700 my-2" />
                       </>
                     )}
-                    
+
                     <button
                       onClick={handleSignOut}
                       className="flex items-center gap-3 font-mono text-base sm:text-lg py-2 text-red-400 hover:text-red-300 transition-colors text-left"
@@ -407,9 +400,9 @@ const Header: React.FC = () => {
       </AnimatePresence>
 
       {/* Cart Modal */}
-      <CartModal 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+      <CartModal
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </header>
   )

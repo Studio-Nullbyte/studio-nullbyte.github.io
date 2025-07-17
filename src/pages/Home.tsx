@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Code, Palette, Zap, Users, Download, Contact, Loader2 } from 'lucide-react'
+import { ArrowRight, Code, Contact, Download, Loader2, Palette, Users, Zap } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import SEO from '../components/SEO'
 import { getFeaturedProducts } from '../lib/supabase'
 import type { Product } from '../lib/types/database'
+import { logger } from '../utils/logger'
 
 const Home: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
@@ -16,15 +17,15 @@ const Home: React.FC = () => {
       try {
         setLoading(true)
         const { data, error } = await getFeaturedProducts(3)
-        
+
         if (error) {
-          console.error('Error fetching featured products:', error)
+          logger.error('Error fetching featured products:', error)
           setError('Failed to load featured products')
         } else if (data) {
           setFeaturedProducts(data)
         }
       } catch (err) {
-        console.error('Error fetching featured products:', err)
+        logger.error('Error fetching featured products:', err)
         setError('Failed to load featured products')
       } finally {
         setLoading(false)
@@ -98,9 +99,9 @@ const Home: React.FC = () => {
       </a>
 
       {/* Hero Section */}
-      <section 
+      <section
         id="main-content"
-        className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6" 
+        className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 pt-20"
         aria-labelledby="hero-heading"
       >
         <div className="absolute inset-0 bg-grid-pattern opacity-10" aria-hidden="true" />
@@ -111,7 +112,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
-            <h1 
+            <h1
               id="hero-heading"
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-mono font-bold mb-4 sm:mb-6 leading-tight"
             >
@@ -124,8 +125,8 @@ const Home: React.FC = () => {
               Clean. Branded. Ready to deploy.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-              <Link 
-                to="/products" 
+              <Link
+                to="/products"
                 className="btn-primary inline-flex items-center justify-center"
                 aria-describedby="browse-description"
               >
@@ -144,7 +145,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section 
+      <section
         className="py-12 sm:py-16 lg:py-20 bg-code-gray"
         aria-labelledby="stats-heading"
       >
@@ -159,7 +160,7 @@ const Home: React.FC = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <div 
+                <div
                   className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-electric-violet mb-2"
                   aria-label={`${stat.value} ${stat.label}`}
                 >
@@ -175,13 +176,13 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section 
+      <section
         className="py-12 sm:py-16 lg:py-20"
         aria-labelledby="features-heading"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 
+            <h2
               id="features-heading"
               className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
             >
@@ -218,13 +219,13 @@ const Home: React.FC = () => {
 
       {/* Featured Products - Only show if there are products or if loading/error */}
       {(loading || error || featuredProducts.length > 0) && (
-        <section 
+        <section
           className="py-12 sm:py-16 lg:py-20 bg-code-gray"
           aria-labelledby="featured-products-heading"
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 
+              <h2
                 id="featured-products-heading"
                 className="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold mb-4"
               >
@@ -308,8 +309,8 @@ const Home: React.FC = () => {
 
             {featuredProducts.length > 0 && (
               <div className="text-center mt-8 sm:mt-12">
-                <Link 
-                  to="/products" 
+                <Link
+                  to="/products"
                   className="btn-secondary inline-flex items-center"
                   aria-label="View all products in our catalog"
                 >
@@ -323,13 +324,13 @@ const Home: React.FC = () => {
       )}
 
       {/* CTA Section */}
-      <section 
+      <section
         className="py-20"
         aria-labelledby="cta-heading"
       >
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 
+            <h2
               id="cta-heading"
               className="text-3xl md:text-4xl font-mono font-bold mb-4"
             >
@@ -339,8 +340,8 @@ const Home: React.FC = () => {
               Join thousands of developers who trust Studio Nullbyte for their projects.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                to="/products" 
+              <Link
+                to="/products"
                 className="btn-primary flex"
                 aria-describedby="get-started-description"
               >
@@ -350,8 +351,8 @@ const Home: React.FC = () => {
               <span id="get-started-description" className="sr-only">
                 Browse our product catalog to find the perfect template for your project
               </span>
-              <Link 
-                to="/contact" 
+              <Link
+                to="/contact"
                 className="btn-secondary flex"
                 aria-label="Contact us for support or custom solutions"
               >
