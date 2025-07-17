@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { useNavigate, Link } from 'react-router-dom'
-import { 
-  ShoppingCart, 
-  Search, 
-  Filter,
-  Eye, 
-  Edit3,
-  Package,
-  DollarSign,
-  Calendar,
-  User,
+import {
   AlertCircle,
+  Calendar,
   CheckCircle,
   Clock,
-  X,
+  DollarSign,
+  Edit3,
+  ExternalLink,
+  Eye,
+  Filter,
+  Package,
   Save,
-  ExternalLink
+  Search,
+  ShoppingCart,
+  User,
+  X
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { Link, useNavigate } from 'react-router-dom'
 
 import AdminLayout from '../components/AdminLayout'
 
@@ -69,7 +69,7 @@ const statusIcons = {
 export default function AdminOrders(): JSX.Element | null {
   const { isAdmin, loading, getOrders, updateOrder } = useAdmin()
   const navigate = useNavigate()
-  
+
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
@@ -136,7 +136,7 @@ export default function AdminOrders(): JSX.Element | null {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(order => 
+      filtered = filtered.filter(order =>
         order.id.toLowerCase().includes(term) ||
         order.user_profiles?.email.toLowerCase().includes(term) ||
         order.user_profiles?.full_name?.toLowerCase().includes(term) ||
@@ -201,14 +201,14 @@ export default function AdminOrders(): JSX.Element | null {
         setError('Failed to update order')
       } else {
         setMessage('Order updated successfully!')
-        
+
         // Update local state
-        setOrders(orders.map(order => 
-          order.id === editingOrder.id 
+        setOrders(orders.map(order =>
+          order.id === editingOrder.id
             ? { ...order, ...orderData }
             : order
         ))
-        
+
         setTimeout(() => {
           resetForms()
         }, 1500)
@@ -520,7 +520,7 @@ export default function AdminOrders(): JSX.Element | null {
                                 <Eye className="w-3 h-3" />
                                 View
                               </button>
-                              
+
                               <button
                                 onClick={() => openEditModal(order)}
                                 className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
@@ -774,7 +774,7 @@ export default function AdminOrders(): JSX.Element | null {
                   <Save className="w-4 h-4" />
                   {formLoading ? 'Saving...' : 'Update Order'}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={resetForms}

@@ -1,8 +1,8 @@
-import React from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { CheckCircle, Package, CreditCard, Calendar, ArrowRight } from 'lucide-react'
+import { ArrowRight, Calendar, CheckCircle, CreditCard, Package } from 'lucide-react'
+import React from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface OrderItem {
   title: string
@@ -23,7 +23,7 @@ interface OrderDetails {
 const OrderConfirmation: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  
+
   // In a real app, this would come from the payment result or API
   const orderDetails: OrderDetails = location.state || {
     orderId: `ORD-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
@@ -237,7 +237,7 @@ const OrderConfirmation: React.FC = () => {
                 Continue Shopping
                 <ArrowRight className="w-4 h-4" />
               </button>
-              
+
               <button
                 onClick={() => navigate('/')}
                 className="btn-ghost"
@@ -256,7 +256,7 @@ const OrderConfirmation: React.FC = () => {
               <div className="text-sm text-gray-400">
                 <div className="font-mono font-bold text-white mb-2">Need Help?</div>
                 <div>
-                  If you have any questions about your order or need assistance with downloads, 
+                  If you have any questions about your order or need assistance with downloads,
                   please don't hesitate to{' '}
                   <button
                     onClick={() => navigate('/contact')}

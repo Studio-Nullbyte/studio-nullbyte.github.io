@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthContext } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { debugAdminState } from '../utils/adminDebug'
-import { testSupabaseConnection, checkSupabaseStatus } from '../utils/supabaseDiagnostics'
 import type { UserProfile } from '../lib/types/database'
+import { debugAdminState } from '../utils/adminDebug'
+import { checkSupabaseStatus, testSupabaseConnection } from '../utils/supabaseDiagnostics'
 
 interface AdminStats {
   totalUsers: number
@@ -127,11 +127,11 @@ export function useAdmin() {
       try {
         const cachedStatus = localStorage.getItem(ADMIN_CACHE_KEY)
         const cachedExpiry = localStorage.getItem(ADMIN_CACHE_EXPIRY)
-        
+
         if (cachedStatus && cachedExpiry) {
           const expiryTime = parseInt(cachedExpiry)
           const now = Date.now()
-          
+
           // Cache valid for 30 minutes
           if (now < expiryTime && user) {
             const isAdminCached = cachedStatus === 'true'
@@ -166,12 +166,12 @@ export function useAdmin() {
   // Check if user is admin - wait for both auth and admin loading to complete
   useEffect(() => {
     const checkAdminStatus = () => {
-    //   debugAdminState('checkAdminStatus', {
-    //     authLoading,
-    //     user: !!user,
-    //     profile: profile,
-    //     profileRole: profile?.role
-    //   })
+      //   debugAdminState('checkAdminStatus', {
+      //     authLoading,
+      //     user: !!user,
+      //     profile: profile,
+      //     profileRole: profile?.role
+      //   })
 
       // Don't make admin determination until auth is fully loaded
       if (authLoading) {
@@ -186,7 +186,7 @@ export function useAdmin() {
         setLoading(false)
         return
       }
-      
+
       // Wait for profile to be loaded before determining admin status
       if (profile) {
         const adminStatus = profile.role === 'admin'
@@ -213,7 +213,7 @@ export function useAdmin() {
       // When auth state changes, clear cache and re-check admin status
       localStorage.removeItem(ADMIN_CACHE_KEY)
       localStorage.removeItem(ADMIN_CACHE_EXPIRY)
-      
+
       if (!user) {
         setIsAdmin(false)
         setLoading(false)
@@ -222,7 +222,7 @@ export function useAdmin() {
 
     // Listen for session changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
-    
+
     return () => subscription.unsubscribe()
   }, [user])
 
@@ -237,7 +237,7 @@ export function useAdmin() {
       }
 
       console.log('Fetching admin stats from Supabase...')
-      
+
       const [
         usersResult,
         productsResult,
@@ -309,7 +309,7 @@ export function useAdmin() {
       }
     } catch (error) {
       console.error('Error fetching admin stats:', error)
-      
+
       // Check if it's a 503 Service Unavailable error
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as any).message || ''
@@ -321,7 +321,7 @@ export function useAdmin() {
           console.error('   • Check your Supabase dashboard: https://supabase.com/dashboard')
         }
       }
-      
+
       throw error
     }
   }
@@ -330,11 +330,11 @@ export function useAdmin() {
   const getUsers = async () => {
     const maxRetries = 3
     let lastError = null
-    
+
     for (let retry = 0; retry < maxRetries; retry++) {
       try {
         debugAdminState('fetching users', { retry, maxRetries })
-        
+
         // Get user profiles with auth data from profiles table
         const { data: profiles, error } = await supabase
           .from('user_profiles')
@@ -353,18 +353,18 @@ export function useAdmin() {
         if (error) {
           lastError = error
           console.error('Supabase error on retry', retry, ':', error)
-          
+
           // If this is a permissions/RLS error, don't retry
           if (error.code === 'PGRST301' || error.message.includes('RLS')) {
             throw error
           }
-          
+
           // Wait before retrying
           if (retry < maxRetries - 1) {
             await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
             continue
           }
-          
+
           throw error
         }
 
@@ -373,7 +373,7 @@ export function useAdmin() {
         // Transform profile data to match AdminUser interface
         const usersWithProfiles = profiles?.map((profile: UserProfile) => {
           const [firstName, lastName] = (profile.full_name || '').split(' ')
-          
+
           return {
             id: profile.user_id,
             email: profile.email || '',
@@ -392,7 +392,7 @@ export function useAdmin() {
       } catch (error) {
         lastError = error
         console.error('Error fetching users on retry', retry, ':', error)
-        
+
         // If this is the last retry, throw the error
         if (retry === maxRetries - 1) {
           if (error instanceof Error && error.message.includes('column')) {
@@ -400,12 +400,12 @@ export function useAdmin() {
           }
           throw error
         }
-        
+
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
       }
     }
-    
+
     throw lastError || new Error('Failed to fetch users after multiple retries')
   }
 
@@ -458,11 +458,11 @@ export function useAdmin() {
   const getProducts = async (): Promise<Product[]> => {
     const maxRetries = 3
     let lastError = null
-    
+
     for (let retry = 0; retry < maxRetries; retry++) {
       try {
         debugAdminState('fetching products', { retry, maxRetries })
-        
+
         const { data, error } = await supabase
           .from('products')
           .select(`
@@ -474,18 +474,18 @@ export function useAdmin() {
         if (error) {
           lastError = error
           console.error('Supabase error on retry', retry, ':', error)
-          
+
           // If this is a permissions/RLS error, don't retry
           if (error.code === 'PGRST301' || error.message.includes('RLS')) {
             throw error
           }
-          
+
           // Wait before retrying
           if (retry < maxRetries - 1) {
             await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
             continue
           }
-          
+
           throw error
         }
 
@@ -494,17 +494,17 @@ export function useAdmin() {
       } catch (error) {
         lastError = error
         console.error('Error fetching products on retry', retry, ':', error)
-        
+
         // If this is the last retry, throw the error
         if (retry === maxRetries - 1) {
           throw error
         }
-        
+
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
       }
     }
-    
+
     throw lastError || new Error('Failed to fetch products after multiple retries')
   }
 
@@ -586,7 +586,7 @@ export function useAdmin() {
   const getOrders = async (): Promise<Order[]> => {
     try {
       console.log('Starting getOrders...')
-      
+
       // First, check if orders table exists by trying a simple query
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
@@ -595,13 +595,13 @@ export function useAdmin() {
 
       if (ordersError) {
         console.error('Error fetching orders:', ordersError)
-        
+
         // If table doesn't exist, return empty array instead of throwing
         if (ordersError.message.includes('table') || ordersError.message.includes('does not exist')) {
           console.warn('Orders table does not exist, returning empty array')
           return []
         }
-        
+
         throw ordersError
       }
 
@@ -629,7 +629,7 @@ export function useAdmin() {
           console.error('Error fetching user profiles:', userError)
         } else {
           console.log('User profiles fetched:', userProfiles?.length || 0)
-          
+
           // Create a map of user profiles for quick lookup
           if (userProfiles) {
             userProfiles.forEach((profile: UserProfile) => {
@@ -647,7 +647,7 @@ export function useAdmin() {
       try {
         const orderIds = ordersData.map((order: Order) => order.id)
         console.log('Order IDs to fetch items for:', orderIds)
-        
+
         const { data: orderItems, error: itemsError } = await supabase
           .from('order_items')
           .select(`
@@ -664,7 +664,7 @@ export function useAdmin() {
           console.error('Error fetching order items:', itemsError)
         } else {
           console.log('Order items fetched:', orderItems?.length || 0)
-          
+
           // Create a map of order items grouped by order_id
           if (orderItems) {
             orderItems.forEach((item: OrderItem) => {
@@ -690,13 +690,13 @@ export function useAdmin() {
       return enrichedOrders
     } catch (error) {
       console.error('Error fetching orders:', error)
-      
+
       // If it's a table not found error, return empty array instead of throwing
       if (error instanceof Error && (error.message.includes('table') || error.message.includes('does not exist'))) {
         console.warn('Database tables not found, returning empty array')
         return []
       }
-      
+
       throw error
     }
   }
@@ -773,11 +773,11 @@ export function useAdmin() {
   const getCategories = async (): Promise<Category[]> => {
     const maxRetries = 3
     let lastError = null
-    
+
     for (let retry = 0; retry < maxRetries; retry++) {
       try {
         debugAdminState('fetching categories', { retry, maxRetries })
-        
+
         const { data, error } = await supabase
           .from('categories')
           .select('*')
@@ -786,18 +786,18 @@ export function useAdmin() {
         if (error) {
           lastError = error
           console.error('Supabase error on retry', retry, ':', error)
-          
+
           // If this is a permissions/RLS error, don't retry
           if (error.code === 'PGRST301' || error.message.includes('RLS')) {
             throw error
           }
-          
+
           // Wait before retrying
           if (retry < maxRetries - 1) {
             await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
             continue
           }
-          
+
           throw error
         }
 
@@ -806,17 +806,17 @@ export function useAdmin() {
       } catch (error) {
         lastError = error
         console.error('Error fetching categories on retry', retry, ':', error)
-        
+
         // If this is the last retry, throw the error
         if (retry === maxRetries - 1) {
           throw error
         }
-        
+
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, (retry + 1) * 1000))
       }
     }
-    
+
     throw lastError || new Error('Failed to fetch categories after multiple retries')
   }
 
@@ -903,19 +903,19 @@ export function useAdmin() {
 
       if (uploadError) {
         console.error('Error uploading image:', uploadError)
-        
+
         // If bucket doesn't exist, provide helpful message
         if (uploadError.message?.includes('Bucket not found')) {
-          return { 
-            url: null, 
+          return {
+            url: null,
             error: 'Storage bucket not found. Please create an "images" bucket in your Supabase dashboard under Storage.'
           }
         }
 
         // If RLS policy error, provide helpful message
         if (uploadError.message?.includes('row-level security') || uploadError.message?.includes('policy')) {
-          return { 
-            url: null, 
+          return {
+            url: null,
             error: 'Storage permissions error. Please check your Supabase storage policies or contact an administrator.'
           }
         }
@@ -998,4 +998,5 @@ export function useAdmin() {
   }
 }
 
-export type { Order, Category }
+export type { Category, Order }
+

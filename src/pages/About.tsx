@@ -1,6 +1,6 @@
-import React from 'react'
 import { motion } from 'framer-motion'
-import { Code, Users, Zap, Target, Coffee } from 'lucide-react'
+import { Code, Coffee, Target, Users, Zap } from 'lucide-react'
+import React from 'react'
 import SEO from '../components/SEO'
 
 const About: React.FC = (): JSX.Element => {
@@ -85,7 +85,7 @@ const About: React.FC = (): JSX.Element => {
 
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Hero Section */}
-        <section 
+        <section
           id="main-content"
           className="py-12 sm:py-16 lg:py-20 bg-code-gray"
           aria-labelledby="about-heading"
@@ -122,12 +122,12 @@ const About: React.FC = (): JSX.Element => {
                     Our Mission
                   </h2>
                   <p className="text-gray-400 text-lg mb-6">
-                    We believe that great tools should empower creators, not constrain them. 
-                    Our mission is to provide modular, high-quality templates and tools that 
+                    We believe that great tools should empower creators, not constrain them.
+                    Our mission is to provide modular, high-quality templates and tools that
                     help developers and designers ship faster without compromising on quality.
                   </p>
                   <p className="text-gray-400 text-lg">
-                    Every template in our collection is built with modern best practices, 
+                    Every template in our collection is built with modern best practices,
                     accessibility in mind, and the flexibility to adapt to your unique needs.
                   </p>
                 </div>

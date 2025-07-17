@@ -1,5 +1,5 @@
-import { createContext, useContext, ReactNode } from 'react'
-import { User, Session, AuthError, AuthResponse } from '@supabase/supabase-js'
+import { AuthError, AuthResponse, Session, User } from '@supabase/supabase-js'
+import { createContext, ReactNode, useContext } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { UserProfile } from '../lib/types/database'
 

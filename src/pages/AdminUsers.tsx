@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { 
-  Users, 
-  Search, 
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Crown,
+  Edit3,
   Filter,
-  Edit3, 
-  Trash2,
+  Mail,
+  Save,
+  Search,
   Shield,
   ShieldCheck,
-  Mail,
-  Calendar,
-  AlertCircle,
-  CheckCircle,
-  Save,
-  X,
-  Crown,
-  User as UserIcon
+  Trash2,
+  User as UserIcon,
+  Users,
+  X
 } from 'lucide-react'
-import { useAdmin } from '../hooks/useAdmin'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { useAdmin } from '../hooks/useAdmin'
 
 interface AdminUser {
   id: string
@@ -38,7 +38,7 @@ interface AdminUser {
 export default function AdminUsers(): JSX.Element | null {
   const { isAdmin, loading, getUsers, updateUser, deleteUser } = useAdmin()
   const navigate = useNavigate()
-  
+
   const [users, setUsers] = useState<AdminUser[]>([])
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([])
   const [usersLoading, setUsersLoading] = useState(true)
@@ -88,7 +88,7 @@ export default function AdminUsers(): JSX.Element | null {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.email.toLowerCase().includes(term) ||
         (user.first_name && user.first_name.toLowerCase().includes(term)) ||
         (user.last_name && user.last_name.toLowerCase().includes(term))
@@ -163,14 +163,14 @@ export default function AdminUsers(): JSX.Element | null {
         setError('Failed to update user')
       } else {
         setMessage('User updated successfully!')
-        
+
         // Update local state
-        setUsers(users.map(user => 
-          user.id === editingUser.id 
+        setUsers(users.map(user =>
+          user.id === editingUser.id
             ? { ...user, ...userData }
             : user
         ))
-        
+
         setTimeout(() => {
           resetForm()
         }, 1500)
@@ -193,7 +193,7 @@ export default function AdminUsers(): JSX.Element | null {
         setError('Failed to delete user')
       } else {
         setMessage('User deleted successfully!')
-        
+
         // Remove from local state
         setUsers(users.filter(u => u.id !== userId))
       }
@@ -444,11 +444,10 @@ export default function AdminUsers(): JSX.Element | null {
 
                         {/* Role */}
                         <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${
-                            user.role === 'admin' 
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${user.role === 'admin'
                               ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                               : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          }`}>
+                            }`}>
                             {user.role === 'admin' ? (
                               <Shield className="w-3 h-3" />
                             ) : (
@@ -461,11 +460,10 @@ export default function AdminUsers(): JSX.Element | null {
                         {/* Status */}
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${
-                              user.is_active 
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${user.is_active
                                 ? 'bg-terminal-green/20 text-terminal-green border border-terminal-green/30'
                                 : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            }`}>
+                              }`}>
                               {user.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </div>
@@ -484,7 +482,7 @@ export default function AdminUsers(): JSX.Element | null {
                         {/* Last Sign In */}
                         <td className="p-4">
                           <span className="font-mono text-gray-300 text-sm">
-                            {user.last_sign_in_at 
+                            {user.last_sign_in_at
                               ? new Date(user.last_sign_in_at).toLocaleDateString()
                               : 'Never'
                             }
@@ -501,7 +499,7 @@ export default function AdminUsers(): JSX.Element | null {
                               <Edit3 className="w-3 h-3" />
                               Edit
                             </button>
-                            
+
                             <button
                               onClick={() => handleDelete(user.id, user.email)}
                               className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-mono transition-colors"
@@ -647,7 +645,7 @@ export default function AdminUsers(): JSX.Element | null {
                   <Save className="w-4 h-4" />
                   {formLoading ? 'Saving...' : 'Update User'}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={resetForm}

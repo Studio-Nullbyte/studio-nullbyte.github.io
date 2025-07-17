@@ -1,18 +1,18 @@
 // External libraries
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  ChevronRight,
   LayoutDashboard,
-  Package,
-  Tag,
-  Users,
-  ShoppingCart,
   Mail,
   Menu,
-  X,
-  ChevronRight
+  Package,
+  ShoppingCart,
+  Tag,
+  Users,
+  X
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 interface AdminSidebarProps {
   className?: string
@@ -27,10 +27,10 @@ export default function AdminSidebar({ className = '' }: AdminSidebarProps): JSX
     const checkIsDesktop = () => {
       setIsDesktop(window.innerWidth >= 1024)
     }
-    
+
     checkIsDesktop()
     window.addEventListener('resize', checkIsDesktop)
-    
+
     return () => window.removeEventListener('resize', checkIsDesktop)
   }, [])
 
@@ -114,7 +114,7 @@ export default function AdminSidebar({ className = '' }: AdminSidebarProps): JSX
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ 
+        animate={{
           x: isDesktop ? 0 : (isMobileMenuOpen ? 0 : -300),
         }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
@@ -138,20 +138,18 @@ export default function AdminSidebar({ className = '' }: AdminSidebarProps): JSX
                   key={item.href}
                   to={item.href}
                   onClick={closeMobileMenu}
-                  className={`flex items-center gap-2 p-2 rounded font-mono text-sm transition-all duration-200 group ${
-                    isActive
+                  className={`flex items-center gap-2 p-2 rounded font-mono text-sm transition-all duration-200 group ${isActive
                       ? 'bg-electric-violet text-white shadow-lg shadow-electric-violet/25'
                       : 'text-gray-300 hover:text-white hover:bg-code-gray'
-                  }`}
+                    }`}
                 >
-                  <div className={`flex items-center justify-center w-6 h-6 rounded transition-colors ${
-                    isActive
+                  <div className={`flex items-center justify-center w-6 h-6 rounded transition-colors ${isActive
                       ? 'bg-white/20'
                       : 'bg-gray-700 group-hover:bg-gray-600'
-                  }`}>
+                    }`}>
                     <Icon className={`w-3 h-3 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{item.title}</div>
                   </div>

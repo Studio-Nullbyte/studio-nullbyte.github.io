@@ -1,7 +1,7 @@
 // External libraries
+import { Github, Mail } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Github, Mail } from 'lucide-react'
 
 // Internal components
 import Logo from './Logo'

@@ -1,16 +1,16 @@
 // External libraries
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Check, Heart, Share2 } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Heart, Share2, ArrowLeft, Check } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 
 // Internal modules
-import { supabase } from '../lib/supabase'
 import { useCart } from '../contexts/CartContext'
 import { useToast } from '../contexts/ToastContext'
+import { supabase } from '../lib/supabase'
 
 // Types
-import { Product as DatabaseProduct, Category } from '../lib/types/database'
+import { Category, Product as DatabaseProduct } from '../lib/types/database'
 
 type ProductWithCategory = DatabaseProduct & {
   category?: Category
@@ -63,7 +63,7 @@ const Product: React.FC = (): JSX.Element => {
 
   const handleAddToCart = async () => {
     if (!product) return
-    
+
     setIsAddingToCart(true)
     try {
       addToCart({
@@ -73,7 +73,7 @@ const Product: React.FC = (): JSX.Element => {
         image_url: product.image_url,
         stripe_price_id: product.stripe_price_id
       })
-      
+
       // Show success toast
       showToast({
         type: 'success',
@@ -93,7 +93,7 @@ const Product: React.FC = (): JSX.Element => {
 
   const handleBuyNow = async () => {
     if (!product) return
-    
+
     setIsAddingToCart(true)
     try {
       // Add to cart if not already there
@@ -106,7 +106,7 @@ const Product: React.FC = (): JSX.Element => {
           stripe_price_id: product.stripe_price_id
         })
       }
-      
+
       // Navigate to checkout
       navigate('/checkout')
     } catch (error) {
@@ -138,7 +138,7 @@ const Product: React.FC = (): JSX.Element => {
         <div className="container mx-auto px-4 py-20">
           <div className="text-center">
             <div className="font-mono text-red-400 mb-4">{error || 'Product not found'}</div>
-            <button 
+            <button
               onClick={() => navigate('/products')}
               className="btn-secondary"
             >
@@ -160,7 +160,7 @@ const Product: React.FC = (): JSX.Element => {
       <div className="min-h-screen pt-20">
         {/* Back Button */}
         <div className="container mx-auto px-4 py-8">
-          <button 
+          <button
             onClick={() => navigate('/products')}
             className="flex items-center text-gray-400 hover:text-white transition-colors font-mono text-sm"
           >
@@ -227,14 +227,13 @@ const Product: React.FC = (): JSX.Element => {
                 </div>
 
                 <div className="flex gap-4 mb-6">
-                  <button 
+                  <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart || isInCart(product.id)}
-                    className={`flex-1 ${
-                      isInCart(product.id) 
-                        ? 'btn-secondary cursor-not-allowed' 
+                    className={`flex-1 ${isInCart(product.id)
+                        ? 'btn-secondary cursor-not-allowed'
                         : 'btn-primary'
-                    }`}
+                      }`}
                   >
                     {isAddingToCart ? (
                       <span className="flex items-center justify-center gap-2">
@@ -250,8 +249,8 @@ const Product: React.FC = (): JSX.Element => {
                       `Add to Cart - $${product.price}`
                     )}
                   </button>
-                  
-                  <button 
+
+                  <button
                     onClick={handleBuyNow}
                     disabled={isAddingToCart}
                     className="btn-primary flex-1"
@@ -368,7 +367,7 @@ const Product: React.FC = (): JSX.Element => {
                 <div className="card">
                   <h3 className="text-lg font-mono font-bold mb-4">License</h3>
                   <p className="text-gray-400 text-sm">
-                    Single-use license for personal and commercial projects. 
+                    Single-use license for personal and commercial projects.
                     Full source code included with lifetime updates.
                   </p>
                 </div>

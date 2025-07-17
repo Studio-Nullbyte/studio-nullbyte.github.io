@@ -3,10 +3,10 @@
  * This helps debug and fix intermittent admin access issues
  */
 
+import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
-import { debugAdminState } from './adminDebug'
-import type { User, Session } from '@supabase/supabase-js'
 import type { UserProfile } from '../lib/types/database'
+import { debugAdminState } from './adminDebug'
 
 export interface AdminAuthResult {
   isAdmin: boolean
@@ -20,16 +20,16 @@ export interface AdminAuthResult {
 export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
   const warnings: string[] = []
   let error: string | undefined
-  
+
   try {
     // Step 1: Check current session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
+
     if (sessionError) {
       error = `Session error: ${sessionError.message}`
       debugAdminState('session error', { sessionError })
     }
-    
+
     if (!session) {
       return {
         isAdmin: false,
@@ -40,7 +40,7 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
         warnings
       }
     }
-    
+
     // Step 2: Check user
     const user = session.user
     if (!user) {
@@ -53,14 +53,14 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
         warnings
       }
     }
-    
+
     // Step 3: Check profile with explicit admin check
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('user_id', user.id)
       .single()
-    
+
     if (profileError) {
       if (profileError.code === 'PGRST116') {
         error = 'No profile found for user'
@@ -69,7 +69,7 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
         debugAdminState('profile error', { profileError })
       }
     }
-    
+
     if (!profile) {
       return {
         isAdmin: false,
@@ -80,20 +80,20 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
         warnings
       }
     }
-    
+
     // Step 4: Check admin role
     const isAdmin = profile.role === 'admin'
-    
+
     if (!isAdmin) {
       warnings.push(`User role is '${profile.role}', not 'admin'`)
     }
-    
+
     // Step 5: Test admin data access
     try {
       const { data: testData, error: testError } = await supabase
         .from('products')
         .select('id', { count: 'exact', head: true })
-      
+
       if (testError) {
         warnings.push(`Admin data access test failed: ${testError.message}`)
         debugAdminState('admin data access test failed', { testError })
@@ -103,14 +103,14 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
     } catch (testError) {
       warnings.push(`Admin data access test exception: ${testError}`)
     }
-    
+
     debugAdminState('admin auth check complete', {
       isAdmin,
       userId: user.id,
       profileRole: profile.role,
       warningCount: warnings.length
     })
-    
+
     return {
       isAdmin,
       user,
@@ -122,7 +122,7 @@ export async function performAdminAuthCheck(): Promise<AdminAuthResult> {
   } catch (exception) {
     error = `Admin auth check exception: ${exception}`
     debugAdminState('admin auth check exception', { exception })
-    
+
     return {
       isAdmin: false,
       user: null,
@@ -142,17 +142,17 @@ export async function forceRefreshAdminProfile(): Promise<AdminAuthResult> {
     // Clear admin cache
     localStorage.removeItem('studio_nullbyte_admin_status')
     localStorage.removeItem('studio_nullbyte_admin_expiry')
-    
+
     // Force fresh auth check
     const result = await performAdminAuthCheck()
-    
+
     // If admin, cache the result
     if (result.isAdmin) {
       const expiryTime = Date.now() + (30 * 60 * 1000) // 30 minutes
       localStorage.setItem('studio_nullbyte_admin_status', 'true')
       localStorage.setItem('studio_nullbyte_admin_expiry', expiryTime.toString())
     }
-    
+
     return result
   } catch (error) {
     return {
@@ -181,13 +181,13 @@ export async function testAdminDataAccess(): Promise<{
   let products = false
   let users = false
   let orders = false
-  
+
   try {
     // Test categories access
     const { error: catError } = await supabase
       .from('categories')
       .select('id', { count: 'exact', head: true })
-    
+
     if (catError) {
       errors.push(`Categories: ${catError.message}`)
     } else {
@@ -196,13 +196,13 @@ export async function testAdminDataAccess(): Promise<{
   } catch (error) {
     errors.push(`Categories exception: ${error}`)
   }
-  
+
   try {
     // Test products access
     const { error: prodError } = await supabase
       .from('products')
       .select('id', { count: 'exact', head: true })
-    
+
     if (prodError) {
       errors.push(`Products: ${prodError.message}`)
     } else {
@@ -211,13 +211,13 @@ export async function testAdminDataAccess(): Promise<{
   } catch (error) {
     errors.push(`Products exception: ${error}`)
   }
-  
+
   try {
     // Test users access
     const { error: userError } = await supabase
       .from('user_profiles')
       .select('user_id', { count: 'exact', head: true })
-    
+
     if (userError) {
       errors.push(`Users: ${userError.message}`)
     } else {
@@ -226,13 +226,13 @@ export async function testAdminDataAccess(): Promise<{
   } catch (error) {
     errors.push(`Users exception: ${error}`)
   }
-  
+
   try {
     // Test orders access
     const { error: orderError } = await supabase
       .from('orders')
       .select('id', { count: 'exact', head: true })
-    
+
     if (orderError) {
       errors.push(`Orders: ${orderError.message}`)
     } else {
@@ -241,7 +241,7 @@ export async function testAdminDataAccess(): Promise<{
   } catch (error) {
     errors.push(`Orders exception: ${error}`)
   }
-  
+
   return {
     categories,
     products,

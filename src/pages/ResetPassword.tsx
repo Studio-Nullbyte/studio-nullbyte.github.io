@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthContext } from '../contexts/AuthContext'
 
 export default function ResetPassword(): JSX.Element {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { updatePassword, signOut } = useAuthContext()
-  
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -22,7 +22,7 @@ export default function ResetPassword(): JSX.Element {
   useEffect(() => {
     const accessToken = searchParams.get('access_token')
     const refreshToken = searchParams.get('refresh_token')
-    
+
     if (!accessToken || !refreshToken) {
       navigate('/auth?mode=reset', { replace: true })
     }
@@ -33,17 +33,17 @@ export default function ResetPassword(): JSX.Element {
       setError('Password is required')
       return false
     }
-    
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
       return false
     }
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       return false
     }
-    
+
     return true
   }
 
@@ -54,10 +54,10 @@ export default function ResetPassword(): JSX.Element {
     if (!validatePasswords()) return
 
     setLoading(true)
-    
+
     try {
       const result = await updatePassword(password)
-      
+
       if (result.error) {
         setError(result.error.message || 'Failed to update password')
       } else {
@@ -97,12 +97,12 @@ export default function ResetPassword(): JSX.Element {
               >
                 <CheckCircle className="w-8 h-8 text-terminal-green" />
               </motion.div>
-              
+
               <h2 className="text-2xl font-mono text-white mb-4">Password Updated!</h2>
               <p className="text-gray-400 font-mono text-sm mb-6">
                 Your password has been successfully updated. You'll be redirected to sign in shortly.
               </p>
-              
+
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-electric-violet mx-auto"></div>
             </div>
           </motion.div>

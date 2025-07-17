@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { 
-  Users, 
-  Package, 
-  ShoppingCart, 
-  DollarSign, 
-  Clock, 
-  Mail,
+import {
   Activity,
-  BarChart3
+  BarChart3,
+  Clock,
+  DollarSign,
+  Mail,
+  Package,
+  ShoppingCart,
+  Users
 } from 'lucide-react'
-import { useAdmin } from '../hooks/useAdmin'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
+import { useAdmin } from '../hooks/useAdmin'
 
 interface StatCard {
   title: string
@@ -182,7 +182,7 @@ export default function AdminDashboard(): JSX.Element | null {
                 <BarChart3 className="w-5 h-5 text-electric-violet" />
                 System Overview
               </h2>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Orders Summary */}
                 <div className="bg-code-gray border border-gray-600 rounded p-4">

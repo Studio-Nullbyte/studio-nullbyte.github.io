@@ -26,7 +26,7 @@ const SEO: React.FC<SEOProps> = ({
 }): JSX.Element => {
   const fullTitle = title.includes('Studio Nullbyte') ? title : `${title} - Studio Nullbyte`
   const fullUrl = url.startsWith('http') ? url : `https://studio-nullbyte.github.io${url}`
-  
+
   return (
     <Helmet>
       {/* Basic Meta Tags */}
@@ -34,17 +34,17 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <meta name="author" content="Studio Nullbyte" />
-      
+
       {/* Canonical URL */}
       {canonical && <link rel="canonical" href={canonical} />}
-      
+
       {/* Robots */}
       {noIndex ? (
         <meta name="robots" content="noindex, nofollow" />
       ) : (
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
       )}
-      
+
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
@@ -55,7 +55,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:image:height" content="512" />
       <meta property="og:site_name" content="Studio Nullbyte" />
       <meta property="og:locale" content="en_US" />
-      
+
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
@@ -63,18 +63,18 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
       <meta name="twitter:site" content="@studionullbyte" />
       <meta name="twitter:creator" content="@studionullbyte" />
-      
+
       {/* Additional Meta Tags */}
       <meta name="theme-color" content="#000000" />
       <meta name="msapplication-TileColor" content="#000000" />
-      
+
       {/* Structured Data */}
       {structuredData && (
         <script type="application/ld+json">
           {structuredData}
         </script>
       )}
-      
+
       {/* Preconnect to external domains for performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

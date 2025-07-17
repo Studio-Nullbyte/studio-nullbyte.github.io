@@ -1,8 +1,8 @@
 // External libraries
-import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { LogOut, Menu, Settings, Shield, ShoppingCart, User, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 // Internal components
 import CartModal from './CartModal'
@@ -109,8 +109,8 @@ const Header: React.FC = (): JSX.Element => {
                 key={item.name}
                 to={item.path}
                 className={`nav-link font-mono text-sm transition-colors hover:text-electric-violet ${location.pathname === item.path
-                    ? 'text-electric-violet'
-                    : 'text-gray-300'
+                  ? 'text-electric-violet'
+                  : 'text-gray-300'
                   }`}
                 aria-current={location.pathname === item.path ? 'page' : undefined}
               >
@@ -123,8 +123,8 @@ const Header: React.FC = (): JSX.Element => {
               <Link
                 to="/admin"
                 className={`flex items-center gap-1 font-mono text-sm transition-colors hover:text-electric-violet ${location.pathname.startsWith('/admin')
-                    ? 'text-electric-violet'
-                    : 'text-gray-300'
+                  ? 'text-electric-violet'
+                  : 'text-gray-300'
                   }`}
               >
                 <Shield className="w-4 h-4" />
@@ -293,8 +293,8 @@ const Header: React.FC = (): JSX.Element => {
                     key={item.name}
                     to={item.path}
                     className={`font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${location.pathname === item.path
-                        ? 'text-electric-violet'
-                        : 'text-gray-300'
+                      ? 'text-electric-violet'
+                      : 'text-gray-300'
                       }`}
                   >
                     {item.name}
@@ -306,8 +306,8 @@ const Header: React.FC = (): JSX.Element => {
                   <Link
                     to="/admin"
                     className={`flex items-center gap-2 font-mono text-base sm:text-lg py-2 transition-colors hover:text-electric-violet ${location.pathname.startsWith('/admin')
-                        ? 'text-electric-violet'
-                        : 'text-gray-300'
+                      ? 'text-electric-violet'
+                      : 'text-gray-300'
                       }`}
                   >
                     <Shield className="w-5 h-5" />

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { User, Session, AuthError, AuthResponse } from '@supabase/supabase-js'
+import { AuthError, AuthResponse, Session, User } from '@supabase/supabase-js'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { UserProfile } from '../lib/types/database'
 
@@ -47,11 +47,11 @@ export function useAuth(): AuthState & AuthActions {
         .select('*')
         .eq('user_id', userId)
         .single()
-      
+
       if (error && error.code !== 'PGRST116') {
         throw error
       }
-      
+
       return data
     } catch (error) {
       console.warn('Profile fetch failed:', error)
@@ -72,10 +72,10 @@ export function useAuth(): AuthState & AuthActions {
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
           const profileData = await fetchProfile(session.user.id)
           setProfile(profileData)
@@ -98,14 +98,14 @@ export function useAuth(): AuthState & AuthActions {
       async (_event: string, session: Session | null) => {
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
           const profileData = await fetchProfile(session.user.id)
           setProfile(profileData)
         } else {
           setProfile(null)
         }
-        
+
         setLoading(false)
       }
     )
@@ -129,10 +129,10 @@ export function useAuth(): AuthState & AuthActions {
   }
 
   const signUp = async (email: string, password: string, userData?: SignUpData): Promise<{ data: AuthResponse['data']; error: AuthError | null }> => {
-    return await supabase.auth.signUp({ 
-      email, 
-      password, 
-      options: { data: userData } 
+    return await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: userData }
     })
   }
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import React, { useState } from 'react'
 
 interface AuthFormData {
   email: string
@@ -79,11 +79,11 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
       console.log('AuthForm: Submitting form for mode:', mode)
       const result = await onSubmit(formData)
       console.log('AuthForm: Form submission result:', result)
-      
+
       if (result.error) {
         console.error('AuthForm: Form submission error:', result.error)
         let errorMessage = result.error || 'An error occurred'
-        
+
         // Provide more user-friendly error messages
         if (errorMessage.includes('Invalid login credentials')) {
           errorMessage = 'Invalid email or password. Please check your credentials and try again.'
@@ -92,7 +92,7 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
         } else if (errorMessage.includes('Missing Supabase environment variables')) {
           errorMessage = 'Configuration error. Please contact support.'
         }
-        
+
         setErrors({ submit: errorMessage })
       } else {
         console.log('AuthForm: Form submission successful')
@@ -105,11 +105,11 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
     } catch (error: any) {
       console.error('AuthForm: Form submission exception:', error)
       let errorMessage = error.message || 'An unexpected error occurred'
-      
+
       if (errorMessage.includes('Missing Supabase environment variables')) {
         errorMessage = 'Configuration error. Please contact support.'
       }
-      
+
       setErrors({ submit: errorMessage })
     }
   }
@@ -186,9 +186,8 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className={`w-full bg-code-gray border pl-10 pr-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${
-                    errors.fullName ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  className={`w-full bg-code-gray border pl-10 pr-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${errors.fullName ? 'border-red-500' : 'border-gray-600'
+                    }`}
                   placeholder="Enter your full name"
                   disabled={loading}
                 />
@@ -210,9 +209,8 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full bg-code-gray border pl-10 pr-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${
-                  errors.email ? 'border-red-500' : 'border-gray-600'
-                }`}
+                className={`w-full bg-code-gray border pl-10 pr-4 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${errors.email ? 'border-red-500' : 'border-gray-600'
+                  }`}
                 placeholder="Enter your email"
                 disabled={loading}
               />
@@ -234,9 +232,8 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full bg-code-gray border pl-10 pr-12 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${
-                    errors.password ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  className={`w-full bg-code-gray border pl-10 pr-12 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${errors.password ? 'border-red-500' : 'border-gray-600'
+                    }`}
                   placeholder="Enter your password"
                   disabled={loading}
                 />
@@ -267,9 +264,8 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={`w-full bg-code-gray border pl-10 pr-12 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  className={`w-full bg-code-gray border pl-10 pr-12 py-3 rounded font-mono text-white placeholder-gray-500 focus:outline-none focus:border-electric-violet transition-colors ${errors.confirmPassword ? 'border-red-500' : 'border-gray-600'
+                    }`}
                   placeholder="Confirm your password"
                   disabled={loading}
                 />

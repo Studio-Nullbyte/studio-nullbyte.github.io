@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AuthForm } from '../components/AuthForm'
 import { useAuthContext } from '../contexts/AuthContext'
 
@@ -50,35 +50,35 @@ export default function Auth(): JSX.Element {
 
   const handleAuthSubmit = async (formData: { email: string; password: string; fullName?: string }) => {
     setIsLoading(true)
-    
+
     try {
       let result
-      
+
       switch (mode) {
         case 'login':
           result = await signIn(formData.email, formData.password)
-          
+
           if (!result.error) {
             const redirectTo = searchParams.get('redirect') || '/'
             navigate(redirectTo, { replace: true })
           }
           break
-          
+
         case 'register':
           result = await signUp(formData.email, formData.password, {
             full_name: formData.fullName,
           })
           // Don't redirect on register - user needs to verify email
           break
-          
+
         case 'reset':
           result = await resetPassword(formData.email)
           break
-          
+
         default:
           result = { error: { message: 'Invalid auth mode' } }
       }
-      
+
       return { error: result.error?.message || null }
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Unknown error occurred' }

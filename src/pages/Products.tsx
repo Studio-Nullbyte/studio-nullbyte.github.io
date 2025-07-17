@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Filter, Search } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import SEO from '../components/SEO'
+import { supabase } from '../lib/supabase'
 
 interface Product {
   id: string
@@ -92,13 +92,13 @@ const Products: React.FC = (): JSX.Element => {
 
   // Filter products based on search and category
   const filteredProducts = products.filter(product => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+
     const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory
-    
+
     return matchesSearch && matchesCategory
   })
 
@@ -142,8 +142,8 @@ const Products: React.FC = (): JSX.Element => {
 
       <div className="min-h-screen pt-16 sm:pt-20">
         {/* Skip Link for Keyboard Navigation */}
-        <a 
-          href="#main-content" 
+        <a
+          href="#main-content"
           className="skip-link"
           onFocus={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           onBlur={(e) => e.currentTarget.style.transform = 'translateY(-100%)'}
@@ -170,8 +170,8 @@ const Products: React.FC = (): JSX.Element => {
                   <label htmlFor="product-search" className="sr-only">
                     Search products by name, description, or tags
                   </label>
-                  <Search 
-                    className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                  <Search
+                    className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     aria-hidden="true"
                   />
                   <input
@@ -201,11 +201,10 @@ const Products: React.FC = (): JSX.Element => {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`px-3 py-2 sm:px-4 rounded-sm font-mono text-xs sm:text-sm transition-colors ${
-                        selectedCategory === category.id
+                      className={`px-3 py-2 sm:px-4 rounded-sm font-mono text-xs sm:text-sm transition-colors ${selectedCategory === category.id
                           ? 'bg-electric-violet text-black'
                           : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                      }`}
+                        }`}
                       aria-pressed={selectedCategory === category.id}
                       aria-describedby={`category-${category.id}-count`}
                     >
@@ -282,7 +281,7 @@ const Products: React.FC = (): JSX.Element => {
                   {selectedCategory !== 'all' && ` in ${categoriesWithCounts.find(c => c.id === selectedCategory)?.name}`}
                   {searchTerm && ` matching "${searchTerm}"`}
                 </div>
-                <div 
+                <div
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
                   role="region"
                   aria-label="Product listings"
@@ -299,14 +298,14 @@ const Products: React.FC = (): JSX.Element => {
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                       >
                         {product.featured && (
-                          <div 
+                          <div
                             className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-electric-violet text-black px-2 py-1 rounded-sm text-xs font-mono font-bold z-10"
                             aria-label="Featured product"
                           >
                             FEATURED
                           </div>
                         )}
-                        
+
                         <div className="aspect-video bg-code-gray-dark rounded-sm mb-4 overflow-hidden">
                           {product.image_url ? (
                             <img
@@ -324,30 +323,30 @@ const Products: React.FC = (): JSX.Element => {
                             <span className="font-mono text-sm">No preview available</span>
                           </div>
                         </div>
-                        
+
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-xs text-electric-violet font-mono uppercase">
                             {product.category?.name || 'Uncategorized'}
                           </span>
-                          <span 
+                          <span
                             className="text-lg sm:text-xl font-mono font-bold text-electric-violet"
                             aria-label={`Price: $${product.price}`}
                           >
                             ${product.price}
                           </span>
                         </div>
-                      
-                        <h3 
+
+                        <h3
                           id={`product-title-${product.id}`}
                           className="text-base sm:text-lg font-mono font-bold mb-2 group-hover:text-electric-violet transition-colors"
                         >
                           {product.title}
                         </h3>
-                        
+
                         <p className="text-gray-300 text-sm mb-4 line-clamp-2">
                           {product.description}
                         </p>
-                        
+
                         <div className="flex flex-wrap gap-2 mb-4" role="list" aria-label="Product tags">
                           {product.tags.slice(0, 3).map((tag, tagIndex) => (
                             <span
@@ -364,8 +363,8 @@ const Products: React.FC = (): JSX.Element => {
                             </span>
                           )}
                         </div>
-                        
-                        <button 
+
+                        <button
                           className="btn-primary w-full"
                           onClick={() => handleViewDetails(product.id)}
                           aria-describedby={`product-description-${product.id}`}

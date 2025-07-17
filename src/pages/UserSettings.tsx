@@ -1,39 +1,39 @@
-import { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  Save, 
-  AlertCircle, 
+import {
+  AlertCircle,
   CheckCircle,
-  LogOut,
   Download,
-  Settings as SettingsIcon
+  Eye,
+  EyeOff,
+  Lock,
+  LogOut,
+  Mail,
+  Save,
+  Settings as SettingsIcon,
+  User
 } from 'lucide-react'
-import { useAuthContext } from '../contexts/AuthContext'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
+import { useAuthContext } from '../contexts/AuthContext'
 import { emergencySignOut } from '../utils/emergencySignOut'
 import { logger } from '../utils/logger'
 
 export default function UserSettings(): JSX.Element {
   const { user, profile, updateProfile, updatePassword, refreshProfile } = useAuthContext()
   const navigate = useNavigate()
-  
+
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  
+
   // Profile form
   const [profileData, setProfileData] = useState({
     fullName: '',
     email: '',
   })
-  
+
   // Password form
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -131,10 +131,10 @@ export default function UserSettings(): JSX.Element {
 
   const handleSignOut = () => {
     logger.auth('UserSettings: Sign out button clicked - using emergency sign out!')
-    
+
     // Show confirmation
     const confirmSignOut = confirm('Are you sure you want to sign out?')
-    
+
     if (confirmSignOut) {
       // Use emergency sign out (this will reload the page)
       emergencySignOut()
@@ -215,11 +215,10 @@ export default function UserSettings(): JSX.Element {
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded font-mono text-sm transition-colors ${
-                            activeTab === tab.id
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded font-mono text-sm transition-colors ${activeTab === tab.id
                               ? 'bg-electric-violet text-white'
                               : 'text-gray-400 hover:text-white hover:bg-code-gray'
-                          }`}
+                            }`}
                         >
                           <Icon className="w-4 h-4" />
                           {tab.label}
@@ -250,7 +249,7 @@ export default function UserSettings(): JSX.Element {
                       animate={{ opacity: 1, x: 0 }}
                     >
                       <h2 className="text-xl font-mono text-white mb-6">Profile Information</h2>
-                      
+
                       <form onSubmit={handleProfileUpdate} className="space-y-6">
                         <div>
                           <label className="block text-sm font-mono text-gray-300 mb-2">
@@ -308,7 +307,7 @@ export default function UserSettings(): JSX.Element {
                       animate={{ opacity: 1, x: 0 }}
                     >
                       <h2 className="text-xl font-mono text-white mb-6">Security Settings</h2>
-                      
+
                       <form onSubmit={handlePasswordUpdate} className="space-y-6">
                         <div>
                           <label className="block text-sm font-mono text-gray-300 mb-2">
@@ -401,7 +400,7 @@ export default function UserSettings(): JSX.Element {
                       animate={{ opacity: 1, x: 0 }}
                     >
                       <h2 className="text-xl font-mono text-white mb-6">Download History</h2>
-                      
+
                       <div className="text-center py-12">
                         <Download className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                         <h3 className="text-lg font-mono text-gray-400 mb-2">No Downloads Yet</h3>
