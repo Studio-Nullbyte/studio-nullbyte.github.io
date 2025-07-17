@@ -12,12 +12,14 @@ import {
   X,
   Plus
 } from 'lucide-react'
-import { useAdmin, type Category } from '../hooks/useAdmin'
+
 import AdminLayout from '../components/AdminLayout'
 import AdminProtectedRoute from '../components/AdminProtectedRoute'
+
+import { useAdmin, type Category } from '../hooks/useAdmin'
 import { generateUniqueSlug } from '../utils/slugify'
 
-export default function AdminCategories() {
+export default function AdminCategories(): JSX.Element {
   const { isAdmin, loading, getCategories, createCategory, updateCategory, deleteCategory } = useAdmin()
   
   const [categories, setCategories] = useState<Category[]>([])

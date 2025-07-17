@@ -35,7 +35,7 @@ interface AdminUser {
   email_confirmed_at: string | null | undefined
 }
 
-export default function AdminUsers() {
+export default function AdminUsers(): JSX.Element | null {
   const { isAdmin, loading, getUsers, updateUser, deleteUser } = useAdmin()
   const navigate = useNavigate()
   

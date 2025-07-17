@@ -35,7 +35,7 @@ interface Category {
   updated_at: string
 }
 
-const Products: React.FC = () => {
+const Products: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')

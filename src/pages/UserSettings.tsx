@@ -19,8 +19,8 @@ import { useNavigate } from 'react-router-dom'
 import { emergencySignOut } from '../utils/emergencySignOut'
 import { logger } from '../utils/logger'
 
-export default function UserSettings() {
-  const { user, profile, updateProfile, updatePassword, signOut, refreshProfile } = useAuthContext()
+export default function UserSettings(): JSX.Element {
+  const { user, profile, updateProfile, updatePassword, refreshProfile } = useAuthContext()
   const navigate = useNavigate()
   
   const [activeTab, setActiveTab] = useState('profile')
@@ -75,7 +75,6 @@ export default function UserSettings() {
     try {
       const result = await updateProfile({
         full_name: profileData.fullName.trim(),
-        email: profileData.email,
       })
 
       if (result.error) {

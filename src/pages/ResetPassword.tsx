@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, Lock, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuthContext } from '../contexts/AuthContext'
 
-export default function ResetPassword() {
+export default function ResetPassword(): JSX.Element {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { updatePassword, signOut } = useAuthContext()

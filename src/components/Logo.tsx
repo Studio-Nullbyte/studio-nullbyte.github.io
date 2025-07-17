@@ -5,7 +5,7 @@ interface LogoProps {
     size?: 'sm' | 'md' | 'lg'
 }
 
-const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
+const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }): JSX.Element => {
     const sizeClasses = {
         sm: 'w-6 h-6',
         md: 'w-8 h-8',

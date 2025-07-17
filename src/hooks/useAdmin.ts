@@ -3,6 +3,7 @@ import { useAuthContext } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { debugAdminState } from '../utils/adminDebug'
 import { testSupabaseConnection, checkSupabaseStatus } from '../utils/supabaseDiagnostics'
+import type { UserProfile } from '../lib/types/database'
 
 interface AdminStats {
   totalUsers: number
@@ -41,6 +42,17 @@ interface Product {
   active: boolean
   created_at: string
   updated_at: string
+}
+
+interface OrderItem {
+  id: string
+  order_id: string
+  product_id: string
+  price: number
+  quantity: number
+  products: {
+    title: string
+  }
 }
 
 interface Order {
@@ -283,7 +295,7 @@ export function useAdmin() {
       }
 
       const totalRevenue = revenueResult.data?.reduce(
-        (sum, order) => sum + parseFloat(order.total_amount.toString()),
+        (sum: number, order: Order) => sum + parseFloat(order.total_amount.toString()),
         0
       ) || 0
 
@@ -359,7 +371,7 @@ export function useAdmin() {
         debugAdminState('users fetched successfully', { count: profiles?.length || 0 })
 
         // Transform profile data to match AdminUser interface
-        const usersWithProfiles = profiles?.map((profile: any) => {
+        const usersWithProfiles = profiles?.map((profile: UserProfile) => {
           const [firstName, lastName] = (profile.full_name || '').split(' ')
           
           return {
@@ -601,7 +613,7 @@ export function useAdmin() {
       }
 
       // Get unique user IDs from orders
-      const userIds = [...new Set(ordersData.map(order => order.user_id))]
+      const userIds = [...new Set(ordersData.map((order: Order) => order.user_id))]
       console.log('User IDs to fetch:', userIds)
 
       let userProfilesMap = new Map()
@@ -620,7 +632,7 @@ export function useAdmin() {
           
           // Create a map of user profiles for quick lookup
           if (userProfiles) {
-            userProfiles.forEach(profile => {
+            userProfiles.forEach((profile: UserProfile) => {
               userProfilesMap.set(profile.user_id, profile)
             })
           }
@@ -633,7 +645,7 @@ export function useAdmin() {
 
       // Try to fetch order items, but don't fail if table doesn't exist
       try {
-        const orderIds = ordersData.map(order => order.id)
+        const orderIds = ordersData.map((order: Order) => order.id)
         console.log('Order IDs to fetch items for:', orderIds)
         
         const { data: orderItems, error: itemsError } = await supabase
@@ -655,7 +667,7 @@ export function useAdmin() {
           
           // Create a map of order items grouped by order_id
           if (orderItems) {
-            orderItems.forEach(item => {
+            orderItems.forEach((item: OrderItem) => {
               if (!orderItemsMap.has(item.order_id)) {
                 orderItemsMap.set(item.order_id, [])
               }
@@ -668,7 +680,7 @@ export function useAdmin() {
       }
 
       // Combine all data
-      const enrichedOrders = ordersData.map(order => ({
+      const enrichedOrders = ordersData.map((order: Order) => ({
         ...order,
         user_profiles: userProfilesMap.get(order.user_id) || null,
         order_items: orderItemsMap.get(order.id) || []
@@ -863,16 +875,16 @@ export function useAdmin() {
   }
 
   // Image Upload Management
-  const uploadProductImage = async (file: File): Promise<{ url: string | null; error: any }> => {
+  const uploadProductImage = async (file: File): Promise<{ url: string | null; error: string | null }> => {
     try {
       // Validate file type and size
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
-        return { url: null, error: { message: 'Invalid file type. Please upload a valid image file.' } }
+        return { url: null, error: 'Invalid file type. Please upload a valid image file.' }
       }
 
       if (file.size > 10485760) { // 10MB
-        return { url: null, error: { message: 'File size too large. Please upload an image smaller than 10MB.' } }
+        return { url: null, error: 'File size too large. Please upload an image smaller than 10MB.' }
       }
 
       // Generate unique filename
@@ -896,9 +908,7 @@ export function useAdmin() {
         if (uploadError.message?.includes('Bucket not found')) {
           return { 
             url: null, 
-            error: { 
-              message: 'Storage bucket not found. Please create an "images" bucket in your Supabase dashboard under Storage.' 
-            } 
+            error: 'Storage bucket not found. Please create an "images" bucket in your Supabase dashboard under Storage.'
           }
         }
 
@@ -906,13 +916,11 @@ export function useAdmin() {
         if (uploadError.message?.includes('row-level security') || uploadError.message?.includes('policy')) {
           return { 
             url: null, 
-            error: { 
-              message: 'Storage permissions error. Please check your Supabase storage policies or contact an administrator.' 
-            } 
+            error: 'Storage permissions error. Please check your Supabase storage policies or contact an administrator.'
           }
         }
 
-        return { url: null, error: uploadError }
+        return { url: null, error: uploadError.message || 'Failed to upload image' }
       }
 
       // Get public URL
@@ -923,11 +931,11 @@ export function useAdmin() {
       return { url: data.publicUrl, error: null }
     } catch (error) {
       console.error('Error in uploadProductImage:', error)
-      return { url: null, error }
+      return { url: null, error: error instanceof Error ? error.message : 'Unknown error occurred' }
     }
   }
 
-  const deleteProductImage = async (imageUrl: string): Promise<{ error: any }> => {
+  const deleteProductImage = async (imageUrl: string): Promise<{ error: string | null }> => {
     try {
       // Extract file path from URL
       const url = new URL(imageUrl)
@@ -940,13 +948,13 @@ export function useAdmin() {
 
       if (error) {
         console.error('Error deleting image:', error)
-        return { error }
+        return { error: error.message || 'Failed to delete image' }
       }
 
       return { error: null }
     } catch (error) {
       console.error('Error in deleteProductImage:', error)
-      return { error }
+      return { error: error instanceof Error ? error.message : 'Unknown error occurred' }
     }
   }
 

@@ -1,9 +1,12 @@
-import { Github, Mail } from 'lucide-react'
+// External libraries
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Github, Mail } from 'lucide-react'
+
+// Internal components
 import Logo from './Logo'
 
-const Footer: React.FC = () => {
+const Footer: React.FC = (): JSX.Element => {
   return (
     <footer className="bg-code-gray border-t border-gray-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

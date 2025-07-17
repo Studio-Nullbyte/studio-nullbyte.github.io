@@ -7,7 +7,7 @@ import { getFeaturedProducts } from '../lib/supabase'
 import type { Product } from '../lib/types/database'
 import { logger } from '../utils/logger'
 
-const Home: React.FC = () => {
+const Home: React.FC = (): JSX.Element => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -23,7 +23,7 @@ interface StatCard {
   trend?: string
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard(): JSX.Element | null {
   const { isAdmin, loading, getAdminStats } = useAdmin()
   const navigate = useNavigate()
   const [stats, setStats] = useState({

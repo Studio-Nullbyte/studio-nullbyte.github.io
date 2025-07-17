@@ -2,36 +2,47 @@
 // Replace your current useAuth hook with this simplified version
 
 import { useState, useEffect, useCallback } from 'react'
-import { User, Session, AuthError } from '@supabase/supabase-js'
+import { User, Session, AuthError, AuthResponse } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { UserProfile } from '../lib/types/database'
+
+interface SignUpData {
+  full_name?: string
+  role?: string
+}
+
+interface ProfileUpdateData {
+  full_name?: string
+  avatar_url?: string
+}
 
 interface AuthState {
   user: User | null
   session: Session | null
   loading: boolean
-  profile: any | null
+  profile: UserProfile | null
   isAdmin: boolean
 }
 
 interface AuthActions {
-  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
+  signIn: (email: string, password: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
-  signUp: (email: string, password: string, userData?: any) => Promise<{ data: any; error: AuthError | null }>
-  resetPassword: (email: string) => Promise<{ data: any; error: AuthError | null }>
-  updateProfile: (updates: any) => Promise<{ data: any; error: any }>
-  updatePassword: (password: string) => Promise<{ data: any; error: AuthError | null }>
+  signUp: (email: string, password: string, userData?: SignUpData) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
+  resetPassword: (email: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
+  updateProfile: (updates: ProfileUpdateData) => Promise<{ data: UserProfile | null; error: Error | null }>
+  updatePassword: (password: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
 }
 
 export function useAuth(): AuthState & AuthActions {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [profile, setProfile] = useState<any | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
 
   // Computed admin state - no caching needed
   const isAdmin = profile?.role === 'admin'
 
-  const fetchProfile = useCallback(async (userId: string): Promise<any | null> => {
+  const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -78,7 +89,7 @@ export function useAuth(): AuthState & AuthActions {
     initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: string, session: Session | null) => {
+      async (_event: string, session: Session | null) => {
         setSession(session)
         setUser(session?.user ?? null)
         
@@ -97,11 +108,11 @@ export function useAuth(): AuthState & AuthActions {
   }, [fetchProfile])
 
   // Simplified auth actions
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ data: AuthResponse['data']; error: AuthError | null }> => {
     return await supabase.auth.signInWithPassword({ email, password })
   }
 
-  const signOut = async () => {
+  const signOut = async (): Promise<{ error: AuthError | null }> => {
     const result = await supabase.auth.signOut()
     if (!result.error) {
       setUser(null)
@@ -111,7 +122,7 @@ export function useAuth(): AuthState & AuthActions {
     return result
   }
 
-  const signUp = async (email: string, password: string, userData?: any) => {
+  const signUp = async (email: string, password: string, userData?: SignUpData): Promise<{ data: AuthResponse['data']; error: AuthError | null }> => {
     return await supabase.auth.signUp({ 
       email, 
       password, 
@@ -119,13 +130,13 @@ export function useAuth(): AuthState & AuthActions {
     })
   }
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): Promise<{ data: AuthResponse['data']; error: AuthError | null }> => {
     return await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
   }
 
-  const updateProfile = async (updates: any) => {
+  const updateProfile = async (updates: ProfileUpdateData): Promise<{ data: UserProfile | null; error: Error | null }> => {
     if (!user) return { data: null, error: new Error('No user logged in') }
 
     try {
@@ -139,17 +150,17 @@ export function useAuth(): AuthState & AuthActions {
         .select()
         .single()
 
-      if (!error) {
-        setProfile(data)
+      if (!error && data) {
+        setProfile(data as UserProfile)
       }
 
-      return { data, error }
+      return { data: data as UserProfile | null, error }
     } catch (error) {
-      return { data: null, error }
+      return { data: null, error: error as Error }
     }
   }
 
-  const updatePassword = async (password: string) => {
+  const updatePassword = async (password: string): Promise<{ data: AuthResponse['data']; error: AuthError | null }> => {
     return await supabase.auth.updateUser({ password })
   }
 

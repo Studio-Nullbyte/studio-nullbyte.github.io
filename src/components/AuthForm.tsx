@@ -2,9 +2,19 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
 
+interface AuthFormData {
+  email: string
+  password: string
+  fullName?: string
+}
+
+interface AuthResult {
+  error?: string | null
+}
+
 interface AuthFormProps {
   mode: 'login' | 'register' | 'reset'
-  onSubmit: (data: any) => Promise<{ error?: any }>
+  onSubmit: (data: AuthFormData) => Promise<AuthResult>
   loading?: boolean
   onModeChange: (mode: 'login' | 'register' | 'reset') => void
 }
@@ -72,7 +82,7 @@ export function AuthForm({ mode, onSubmit, loading = false, onModeChange }: Auth
       
       if (result.error) {
         console.error('AuthForm: Form submission error:', result.error)
-        let errorMessage = result.error.message || 'An error occurred'
+        let errorMessage = result.error || 'An error occurred'
         
         // Provide more user-friendly error messages
         if (errorMessage.includes('Invalid login credentials')) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
+import { useNavigate, Link } from 'react-router-dom'
 import { 
   ShoppingCart, 
   Search, 
@@ -18,9 +19,10 @@ import {
   Save,
   ExternalLink
 } from 'lucide-react'
-import { useAdmin } from '../hooks/useAdmin'
-import { useNavigate, Link } from 'react-router-dom'
+
 import AdminLayout from '../components/AdminLayout'
+
+import { useAdmin } from '../hooks/useAdmin'
 import { logger } from '../utils/logger'
 
 interface Order {
@@ -64,7 +66,7 @@ const statusIcons = {
   refunded: AlertCircle
 }
 
-export default function AdminOrders() {
+export default function AdminOrders(): JSX.Element | null {
   const { isAdmin, loading, getOrders, updateOrder } = useAdmin()
   const navigate = useNavigate()
   

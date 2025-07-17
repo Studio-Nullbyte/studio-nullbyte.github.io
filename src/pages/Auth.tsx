@@ -7,7 +7,7 @@ import { useAuthContext } from '../contexts/AuthContext'
 
 type AuthMode = 'login' | 'register' | 'reset'
 
-export default function Auth() {
+export default function Auth(): JSX.Element {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { signIn, signUp, resetPassword, loading, user } = useAuthContext()
@@ -48,7 +48,7 @@ export default function Auth() {
     navigate(`/auth?${newParams.toString()}`, { replace: true })
   }, [mode, navigate, searchParams])
 
-  const handleAuthSubmit = async (formData: any) => {
+  const handleAuthSubmit = async (formData: { email: string; password: string; fullName?: string }) => {
     setIsLoading(true)
     
     try {
@@ -76,12 +76,12 @@ export default function Auth() {
           break
           
         default:
-          result = { error: new Error('Invalid auth mode') }
+          result = { error: { message: 'Invalid auth mode' } }
       }
       
-      return result
+      return { error: result.error?.message || null }
     } catch (error) {
-      return { error }
+      return { error: error instanceof Error ? error.message : 'Unknown error occurred' }
     } finally {
       setIsLoading(false)
     }

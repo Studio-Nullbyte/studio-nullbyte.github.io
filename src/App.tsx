@@ -1,13 +1,21 @@
+// External libraries
 import React from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+
+// Context providers
 import { AuthProvider } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
 import { ToastProvider } from './contexts/ToastContext'
+
+// Components
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import CrispChat from './components/CrispChat'
+import AccessibilityChecker from './components/AccessibilityChecker'
+
+// Pages
 import Home from './pages/Home'
 import Products from './pages/Products'
 import Product from './pages/Product'
@@ -28,10 +36,11 @@ import AdminCategories from './pages/AdminCategories'
 import AdminContacts from './pages/AdminContacts'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
-import { useScrollToTop } from './hooks/useScrollToTop'
-import AccessibilityChecker from './components/AccessibilityChecker'
 
-const App: React.FC = () => {
+// Hooks
+import { useScrollToTop } from './hooks/useScrollToTop'
+
+const App: React.FC = (): JSX.Element => {
   const location = useLocation()
 
   useScrollToTop()

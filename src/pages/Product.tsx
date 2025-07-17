@@ -1,38 +1,28 @@
+// External libraries
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Heart, Share2, ArrowLeft, Check } from 'lucide-react'
+
+// Internal modules
 import { supabase } from '../lib/supabase'
 import { useCart } from '../contexts/CartContext'
 import { useToast } from '../contexts/ToastContext'
 
-interface Product {
-  id: string
-  title: string
-  description: string
-  price: number
-  category_id: string
-  category?: {
-    name: string
-    slug: string
-  }
-  image_url: string | null
-  download_url: string | null
-  preview_url: string | null
-  tags: string[]
-  featured: boolean
-  active: boolean
+// Types
+import { Product as DatabaseProduct, Category } from '../lib/types/database'
+
+type ProductWithCategory = DatabaseProduct & {
+  category?: Category
   stripe_price_id?: string | null
-  created_at: string
-  updated_at: string
 }
 
-const Product: React.FC = () => {
+const Product: React.FC = (): JSX.Element => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { addToCart, isInCart } = useCart()
   const { showToast } = useToast()
-  const [product, setProduct] = useState<Product | null>(null)
+  const [product, setProduct] = useState<ProductWithCategory | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -311,7 +301,7 @@ const Product: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag, index) => (
+                  {product.tags.map((tag: string, index: number) => (
                     <span
                       key={index}
                       className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
@@ -364,7 +354,7 @@ const Product: React.FC = () => {
                 <div className="card">
                   <h3 className="text-lg font-mono font-bold mb-4">Tags</h3>
                   <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
+                    {product.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="text-xs bg-electric-violet bg-opacity-20 text-electric-violet px-2 py-1 rounded-sm"

@@ -23,7 +23,7 @@ const SEO: React.FC<SEOProps> = ({
   structuredData,
   noIndex = false,
   canonical
-}) => {
+}): JSX.Element => {
   const fullTitle = title.includes('Studio Nullbyte') ? title : `${title} - Studio Nullbyte`
   const fullUrl = url.startsWith('http') ? url : `https://studio-nullbyte.github.io${url}`
   

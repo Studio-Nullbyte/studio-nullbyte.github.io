@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Code, Users, Zap, Target, Coffee } from 'lucide-react'
 import SEO from '../components/SEO'
 
-const About: React.FC = () => {
+const About: React.FC = (): JSX.Element => {
   const values = [
     {
       icon: <Code className="w-8 h-8" aria-hidden="true" />,

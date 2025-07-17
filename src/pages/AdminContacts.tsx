@@ -14,9 +14,11 @@ import {
   User,
   Filter
 } from 'lucide-react'
-import { useAdmin } from '../hooks/useAdmin'
+
 import AdminLayout from '../components/AdminLayout'
 import AdminProtectedRoute from '../components/AdminProtectedRoute'
+
+import { useAdmin } from '../hooks/useAdmin'
 
 interface ContactSubmission {
   id: string
@@ -28,7 +30,7 @@ interface ContactSubmission {
   status: 'new' | 'in_progress' | 'resolved'
 }
 
-export default function AdminContacts() {
+export default function AdminContacts(): JSX.Element {
   const { isAdmin, getContactSubmissions, updateContactSubmissionStatus } = useAdmin()
   
   const [contacts, setContacts] = useState<ContactSubmission[]>([])

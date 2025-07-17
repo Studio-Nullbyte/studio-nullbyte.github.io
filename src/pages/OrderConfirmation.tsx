@@ -4,12 +4,28 @@ import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { CheckCircle, Package, CreditCard, Calendar, ArrowRight } from 'lucide-react'
 
+interface OrderItem {
+  title: string
+  quantity: number
+  price: number
+}
+
+interface OrderDetails {
+  orderId: string
+  paymentId: string
+  amount: number
+  subtotal: number
+  tax: number
+  items: OrderItem[]
+  paymentMethod: string
+}
+
 const OrderConfirmation: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   
   // In a real app, this would come from the payment result or API
-  const orderDetails = location.state || {
+  const orderDetails: OrderDetails = location.state || {
     orderId: `ORD-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
     paymentId: `PAY-${Math.random().toString(36).substr(2, 12)}`,
     amount: 0,
@@ -152,7 +168,7 @@ const OrderConfirmation: React.FC = () => {
                 <div className="mt-6 pt-6 border-t border-gray-700">
                   <h3 className="text-lg font-mono font-bold mb-4">Items Ordered</h3>
                   <div className="space-y-3">
-                    {orderDetails.items.map((item: any, index: number) => (
+                    {orderDetails.items.map((item: OrderItem, index: number) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-code-gray-dark rounded-sm">
                         <div>
                           <div className="font-mono font-bold">{item.title}</div>

@@ -5,12 +5,14 @@
 
 import { supabase } from '../lib/supabase'
 import { debugAdminState } from './adminDebug'
+import type { User, Session } from '@supabase/supabase-js'
+import type { UserProfile } from '../lib/types/database'
 
 export interface AdminAuthResult {
   isAdmin: boolean
-  user: any | null
-  profile: any | null
-  session: any | null
+  user: User | null
+  profile: UserProfile | null
+  session: Session | null
   error?: string
   warnings: string[]
 }

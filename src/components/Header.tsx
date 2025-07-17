@@ -1,14 +1,19 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { LogOut, Menu, Settings, Shield, ShoppingCart, User, X } from 'lucide-react'
+// External libraries
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useAuthContext } from '../contexts/AuthContext'
-import { useCart } from '../contexts/CartContext'
-import { useKeyboardNavigation } from '../utils/accessibility'
+import { AnimatePresence, motion } from 'framer-motion'
+import { LogOut, Menu, Settings, Shield, ShoppingCart, User, X } from 'lucide-react'
+
+// Internal components
 import CartModal from './CartModal'
 import Logo from './Logo'
 
-const Header: React.FC = () => {
+// Contexts and utilities
+import { useAuthContext } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
+import { useKeyboardNavigation } from '../utils/accessibility'
+
+const Header: React.FC = (): JSX.Element => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)

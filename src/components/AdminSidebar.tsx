@@ -1,3 +1,4 @@
+// External libraries
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -17,7 +18,7 @@ interface AdminSidebarProps {
   className?: string
 }
 
-export default function AdminSidebar({ className = '' }: AdminSidebarProps) {
+export default function AdminSidebar({ className = '' }: AdminSidebarProps): JSX.Element {
   const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)

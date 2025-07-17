@@ -41,7 +41,7 @@ interface Product {
   updated_at: string
 }
 
-export default function AdminProducts() {
+export default function AdminProducts(): JSX.Element {
   const { 
     isAdmin, 
     getProducts, 
@@ -303,7 +303,7 @@ export default function AdminProducts() {
     try {
       const { url, error } = await uploadProductImage(currentImageFile)
       if (error) {
-        setError('Failed to upload image: ' + (error.message || 'Unknown error'))
+        setError('Failed to upload image: ' + (error || 'Unknown error'))
         return null
       }
       return url
